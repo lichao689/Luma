@@ -1,0 +1,34 @@
+//
+// Shared.xcconfig
+// Common build settings for the OfficeWorkoutCoach app + tests.
+//
+
+// App identity
+PRODUCT_NAME = luma
+PRODUCT_BUNDLE_IDENTIFIER = com.lucerna.workoutcoach
+
+// Localization
+DEVELOPMENT_LANGUAGE = zh-Hans
+DEFAULT_LANGUAGE = zh-Hans
+KNOWN_REGIONS = zh-Hans en
+
+// Deployment target & SDK
+MACOSX_DEPLOYMENT_TARGET = 14.0
+SDKROOT = macosx
+
+// Swift
+SWIFT_VERSION = 6.0
+SWIFT_STRICT_CONCURRENCY = minimal
+
+// Build
+ALWAYS_SEARCH_USER_PATHS = NO
+CLANG_ENABLE_MODULES = YES
+CODE_SIGN_IDENTITY = -
+CODE_SIGN_STYLE = Automatic
+COMBINE_HIDPI_IMAGES = YES
+ENABLE_HARDENED_RUNTIME = YES
+INFOPLIST_FILE = OfficeWorkoutCoach/Resources/Info.plist
+INFOPLIST_KEY_NSHumanReadableCopyright = ""
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/../Frameworks
+MARKETING_VERSION = 1.0
+CURRENT_PROJECT_VERSION = 1

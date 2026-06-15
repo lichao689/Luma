@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.swp
+*.lock
+
+# Swift Package Manager
+LogicPackage/.build/
+LogicPackage/.swiftpm/
+LogicPackage/Package.resolved
+.swiftpm/
+
+# 分发产物(用 GitHub Releases 发布,不进版本库)
+dist/
+
+# 临时/备份
+*.tmp
+*~

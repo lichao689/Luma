@@ -1,0 +1,370 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA000001 /* OfficeWorkoutCoachApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001; };
+		AA000003 /* WorkoutSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003; };
+		AA000004 /* UserGoal.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004; };
+		AA000010 /* MenuBarPopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010; };
+		AA000011 /* QuickLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011; };
+		AA000012 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012; };
+		AA000013 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013; };
+		AA000014 /* ExerciseGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014; };
+		AA000020 /* WorkoutRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000020; };
+		AA000023 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000023; };
+		AA000024 /* UILocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000024; };
+		AA000031 /* Localizable.strings (zh-Hans) in Resources */ = {isa = PBXBuildFile; fileRef = AB000031; };
+		AA000032 /* Localizable.strings (en) in Resources */ = {isa = PBXBuildFile; fileRef = AB000032; };
+		AA000035 /* InfoPlist.strings (zh-Hans) in Resources */ = {isa = PBXBuildFile; fileRef = AB000035; };
+		AA000036 /* InfoPlist.strings (en) in Resources */ = {isa = PBXBuildFile; fileRef = AB000036; };
+		AA000060 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = AB000060; };
+		AA000061 /* AppMenuBarIconTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = AB000061; };
+		AA000034 /* Exercises in Resources */ = {isa = PBXBuildFile; fileRef = AB000034; };
+		AA000050 /* OfficeWorkoutLogic in Frameworks */ = {isa = PBXBuildFile; productRef = AF600002 /* OfficeWorkoutLogic */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AB000001 /* OfficeWorkoutCoachApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeWorkoutCoachApp.swift; sourceTree = "<group>"; };
+		AB000003 /* WorkoutSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSession.swift; sourceTree = "<group>"; };
+		AB000004 /* UserGoal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserGoal.swift; sourceTree = "<group>"; };
+		AB000010 /* MenuBarPopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarPopoverView.swift; sourceTree = "<group>"; };
+		AB000011 /* QuickLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLogView.swift; sourceTree = "<group>"; };
+		AB000012 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
+		AB000013 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AB000014 /* ExerciseGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseGuideView.swift; sourceTree = "<group>"; };
+		AB000020 /* WorkoutRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRepository.swift; sourceTree = "<group>"; };
+		AB000023 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		AB000024 /* UILocalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UILocalization.swift; sourceTree = "<group>"; };
+		AB000030 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AB000031 /* zh-Hans Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		AB000035 /* zh-Hans InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
+		AB000060 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
+		AB000061 /* AppMenuBarIconTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppMenuBarIconTemplate.png; sourceTree = "<group>"; };
+		AB000034 /* Exercises */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Exercises; sourceTree = "<group>"; };
+		AB000032 /* en Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		AB000036 /* en InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
+		AB100000 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		AB200000 /* luma.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = luma.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AC000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000050 /* OfficeWorkoutLogic in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AD000000 /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				AD000100 /* OfficeWorkoutCoach */,
+				AB100000 /* Shared.xcconfig */,
+				AD000900 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AD000900 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AB200000 /* luma.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AD000100 /* OfficeWorkoutCoach */ = {
+			isa = PBXGroup;
+			children = (
+				AD000101 /* Models */,
+				AD000110 /* Views */,
+				AD000120 /* Services */,
+				AD000130 /* Resources */,
+				AB000001 /* OfficeWorkoutCoachApp.swift */,
+			);
+			path = OfficeWorkoutCoach;
+			sourceTree = "<group>";
+		};
+		AD000101 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AB000003 /* WorkoutSession.swift */,
+				AB000004 /* UserGoal.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AD000110 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AB000010 /* MenuBarPopoverView.swift */,
+				AB000011 /* QuickLogView.swift */,
+				AB000012 /* SummaryView.swift */,
+				AB000013 /* SettingsView.swift */,
+				AB000014 /* ExerciseGuideView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AD000120 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				AB000020 /* WorkoutRepository.swift */,
+				AB000023 /* NotificationManager.swift */,
+				AB000024 /* UILocalization.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AD000130 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AB000030 /* Info.plist */,
+					AD000131 /* zh-Hans.lproj */,
+						AD000132 /* en.lproj */,
+						AB000060 /* AppIcon.icns */,
+						AB000061 /* AppMenuBarIconTemplate.png */,
+					AB000034 /* Exercises */,
+				);
+				path = Resources;
+				sourceTree = "<group>";
+			};
+		AD000131 /* zh-Hans.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				AB000031 /* Localizable.strings */,
+				AB000035 /* InfoPlist.strings */,
+			);
+			path = zh-Hans.lproj;
+			sourceTree = "<group>";
+		};
+		AD000132 /* en.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				AB000032 /* Localizable.strings */,
+				AB000036 /* InfoPlist.strings */,
+			);
+			path = en.lproj;
+			sourceTree = "<group>";
+		};
+	/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AE000000 /* OfficeWorkoutCoach */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AF000003 /* Build configuration list for OfficeWorkoutCoach */;
+			buildPhases = (
+				AC000002 /* Sources */,
+				AC000001 /* Frameworks */,
+				AC000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OfficeWorkoutCoach;
+			packageProductDependencies = (
+				AF600002 /* OfficeWorkoutLogic */,
+			);
+			productName = OfficeWorkoutCoach;
+			productReference = AB200000 /* luma.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A0000000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = AF000001 /* Build configuration list for PBXProject */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				"zh-Hans",
+				en,
+				Base,
+			);
+			mainGroup = AD000000 /* Root */;
+			packageReferences = (
+				AF700000 /* XCLocalSwiftPackageReference */,
+			);
+			productRefGroup = AD000900 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AE000000 /* OfficeWorkoutCoach */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AC000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+							AA000031 /* Localizable.strings (zh-Hans) in Resources */,
+							AA000035 /* InfoPlist.strings (zh-Hans) in Resources */,
+							AA000060 /* AppIcon.icns in Resources */,
+							AA000061 /* AppMenuBarIconTemplate.png in Resources */,
+						AA000034 /* Exercises in Resources */,
+						AA000032 /* Localizable.strings (en) in Resources */,
+						AA000036 /* InfoPlist.strings (en) in Resources */,
+					);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AC000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001 /* OfficeWorkoutCoachApp.swift in Sources */,
+				AA000003 /* WorkoutSession.swift in Sources */,
+				AA000004 /* UserGoal.swift in Sources */,
+				AA000010 /* MenuBarPopoverView.swift in Sources */,
+				AA000011 /* QuickLogView.swift in Sources */,
+				AA000012 /* SummaryView.swift in Sources */,
+				AA000013 /* SettingsView.swift in Sources */,
+				AA000014 /* ExerciseGuideView.swift in Sources */,
+				AA000020 /* WorkoutRepository.swift in Sources */,
+				AA000023 /* NotificationManager.swift in Sources */,
+				AA000024 /* UILocalization.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		B0000001 /* Debug (project) */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AB100000 /* Shared.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1 $(inherited)";
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		B0000002 /* Release (project) */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AB100000 /* Shared.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B0001001 /* Debug (app) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "";
+				CURRENT_PROJECT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "OfficeWorkoutCoach/Resources/Info.plist";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_GENERATE_MAP_FILE = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.lucerna.workoutcoach";
+				PRODUCT_MODULE_NAME = OfficeWorkoutCoach;
+				PRODUCT_NAME = luma;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		B0001002 /* Release (app) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "";
+				CURRENT_PROJECT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "OfficeWorkoutCoach/Resources/Info.plist";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_GENERATE_MAP_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.lucerna.workoutcoach";
+				PRODUCT_MODULE_NAME = OfficeWorkoutCoach;
+				PRODUCT_NAME = luma;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AF000001 /* Build config list for PBXProject */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0000001 /* Debug */,
+				B0000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AF000003 /* Build config list for OfficeWorkoutCoach */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0001001 /* Debug */,
+				B0001002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		AF700000 /* XCLocalSwiftPackageReference */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "LogicPackage";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AF600002 /* OfficeWorkoutLogic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF700000 /* XCLocalSwiftPackageReference */;
+			productName = OfficeWorkoutLogic;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+	};
+	rootObject = A0000000 /* Project object */;
+}

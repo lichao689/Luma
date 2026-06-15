@@ -1,0 +1,256 @@
+/* OfficeWorkoutCoach — English */
+
+// Workout types
+"workout.type.strengthA" = "Strength A";
+"workout.type.strengthB" = "Strength B";
+"workout.type.run" = "Run";
+"workout.type.recovery" = "Back Recovery";
+"workout.type.minimal" = "8-min Minimum";
+"workout.type.rest" = "Rest";
+
+// Completion
+"completion.full" = "Full";
+"completion.partial" = "Partial";
+"completion.minimal" = "Minimum";
+
+// Body feeling
+"feeling.normal" = "Normal";
+"feeling.backTight" = "Back tight";
+"feeling.legSore" = "Legs sore";
+"feeling.fatigue" = "Fatigued";
+
+// Goal labels
+"goal.strength" = "Strength";
+"goal.run" = "Run";
+"goal.recovery" = "Back Recovery";
+
+// Reminder mode
+"reminder.mode.light" = "Light";
+"reminder.mode.standard" = "Standard";
+"reminder.mode.strict" = "Strict";
+
+// Popover
+"popover.today.title" = "Today's suggestion";
+"popover.quick.title" = "Quick log";
+"popover.progress.title" = "This week";
+"popover.records" = "Records";
+"popover.settings" = "Settings";
+"popover.cta.start" = "Start";
+"popover.cta.run" = "Mark run done";
+"popover.cta.recovery" = "Back recovery";
+"popover.cta.minimal" = "8-min minimum";
+"popover.cta.rest" = "Rest today";
+
+// Recommendation
+"rec.back.title" = "Start with back recovery";
+"rec.back.reason" = "You mentioned back discomfort recently. Prioritize recovery today and skip deadlifts and lunges.";
+"rec.afterRun.title" = "Back recovery after your run";
+"rec.afterRun.reason" = "You already ran today. Pair it with back recovery, no extra leg strength.";
+"rec.run.title" = "Strength goal met — go for a run";
+"rec.maintain.title" = "Back recovery or rest today";
+"rec.maintain.reason" = "Strength and run goals are met. Maintain with recovery.";
+"rec.minimal.title" = "Do the 8-minute minimum";
+
+// Quick log
+"quicklog.complete" = "Completed";
+"quicklog.minimalNote" = "This logs at minimum intensity. Just hit Save.";
+"quicklog.save" = "Save";
+"quicklog.cancel" = "Cancel";
+"field.duration" = "Duration (min)";
+"field.completion" = "Completion";
+"field.intensity" = "Intensity";
+"field.feeling" = "Body feeling";
+"field.notes" = "Notes (optional)";
+
+// Summary
+"summary.title" = "Records & summary";
+"summary.week" = "This week";
+"summary.recent" = "Last 7 days";
+"summary.empty" = "No records yet. Log one from the menu bar.";
+"summary.delete" = "Delete this record";
+
+// Common
+"common.done" = "Done";
+"common.back" = "Back";
+
+// Settings
+"settings.goals" = "Goals";
+"settings.reminders" = "Reminders";
+"settings.window" = "Window";
+"settings.weekly" = "Weekly goals";
+"settings.mode" = "Reminder mode";
+"settings.flexible" = "Daily flexible reminder";
+"settings.sedentary" = "Sedentary reminder";
+"settings.threshold" = "Remind after continuous use";
+"settings.off" = "Off";
+"settings.min90" = "90 min";
+"settings.min75" = "75 min";
+"settings.min60" = "60 min";
+"settings.workWindow" = "Work window";
+"settings.start" = "Start";
+"settings.end" = "End";
+"settings.weekdays" = "Weekdays";
+
+// Notifications
+"notif.action.start" = "Start 8 min";
+"notif.action.later" = "Later";
+"notif.action.rest" = "Rest today";
+"notif.flex.title" = "No workout yet today";
+"notif.flex.body" = "How about an 8-minute minimum right now?";
+"notif.weekly.title" = "Weekly strength still short";
+"notif.weekly.body" = "Do Strength B or the minimum today to hit the goal.";
+"notif.sedentary.title" = "Been sitting a while";
+"notif.sedentary.body" = "Do a back-recovery set: cat-cow, glute bridge, bird-dog, hip flexor stretch.";
+"voice.sedentary" = "Time to stand up and move for ten minutes. Step away from the screen for back, strength, and looking far.";
+"dialog.sedentary.title" = "Health microbreak";
+"dialog.sedentary.body" = "You've worked over an hour and haven't rested. Stand up and move for 10 minutes.";
+"dialog.sedentary.standup" = "I'll get up now";
+"dialog.sedentary.snooze" = "Snooze 10 min";
+
+// Exercise guide — window & sections
+"scene.guide.title" = "Exercise guide";
+"popover.guide" = "Exercises";
+"guide.title" = "Exercise guide";
+"guide.empty.title" = "Pick an exercise";
+"guide.empty.subtitle" = "Choose one from the list to see how to do it.";
+"guide.empty.cues" = "(no instructions yet)";
+"guide.media.placeholder" = "No demo media yet — see the text below.";
+"guide.section.planA" = "Strength A";
+"guide.section.planB" = "Strength B";
+"guide.section.recovery" = "Back Recovery";
+"guide.section.cues" = "Cues";
+"guide.section.focus" = "Visual focus";
+"guide.section.easier" = "Make it easier";
+"guide.section.mistakes" = "Common mistakes";
+"guide.section.stop" = "Stop if";
+"guide.section.targets" = "Main target:";
+
+// Muscle groups
+"muscle.legs" = "Legs";
+"muscle.back" = "Back";
+"muscle.chest" = "Chest";
+"muscle.core" = "Core";
+"muscle.shoulders" = "Shoulders";
+"muscle.glutes" = "Glutes";
+
+// Exercise instructions: each cue / mistake is semicolon-separated and split into a list.
+
+// Goblet squat
+"ex.gobletSquat.name" = "Goblet Squat";
+"ex.gobletSquat.cues" = "Cup one dumbbell vertically at your chest, held close; feet shoulder-width, toes slightly out; break at the hips first, then bend the knees, tracking them over your toes; descend until thighs are parallel or slightly below, chest up and spine neutral; drive through the floor, hips and torso rising together.";
+"ex.gobletSquat.mistakes" = "Knees cave in or heels lift; rounded back loading the spine; shallow depth above parallel; hips shoot up before the torso (good-morning squat).";
+"ex.gobletSquat.focus" = "Knees track over toes; chest tall and spine neutral; heels stay planted.";
+"ex.gobletSquat.easier" = "Use a lighter dumbbell; switch to bodyweight squats if needed; reduce depth while staying controlled.";
+"ex.gobletSquat.stop" = "Sharp knee pain or back pressure; heels cannot stay down; form worsens rep by rep.";
+
+// Romanian deadlift
+"ex.romanianDeadlift.name" = "Romanian Deadlift";
+"ex.romanianDeadlift.cues" = "Hold dumbbells at your sides, feet hip-width, knees softly set; hinge at the hips, pushing them back, weights sliding down the front of your legs; lower until you feel a hamstring stretch (about mid-shin), knee angle nearly unchanged; squeeze the glutes and drive up to standing — don't hyperextend.";
+"ex.romanianDeadlift.mistakes" = "Squatting it (too much knee bend and back rounding); weights drifting away from the body loading the lower back; overextending at the top; rounded back throughout.";
+"ex.romanianDeadlift.focus" = "Push hips back instead of squatting first; keep weights close to the legs; spine stays neutral.";
+"ex.romanianDeadlift.easier" = "Practice a bodyweight hip hinge; lower only to knee height; use very light weight.";
+"ex.romanianDeadlift.stop" = "Sharp low-back pain; numbness or radiating symptoms down the leg; unable to keep a neutral back.";
+
+// Push-up
+"ex.pushUp.name" = "Push-up";
+"ex.pushUp.cues" = "Hands just wider than shoulders, under your chest; straight line from head to heels, brace the core and glutes; lower with elbows about 45° from the body, chest near the floor; push the floor away to full, but not locked, extension.";
+"ex.pushUp.mistakes" = "Sagging hips or piking (un-braced core); elbows flared to a T (shoulder strain); half-range reps; neck diving first.";
+"ex.pushUp.focus" = "Straight line head to heels; elbows about 45°; chest moves toward the floor.";
+"ex.pushUp.easier" = "Kneeling push-up; reduce the lowering depth; fewer reps with full control.";
+"ex.pushUp.stop" = "Front-shoulder pain; lower back sagging uncontrollably; wrist pain.";
+
+// Standing bent-over dumbbell row
+"ex.bentOverDumbbellRow.name" = "Bent-over Dumbbell Row";
+"ex.bentOverDumbbellRow.cues" = "Hold one dumbbell in each hand, feet hip-width, knees softly bent; hinge at the hips so the torso inclines forward, keeping the spine neutral; let the arms hang, set the shoulder blades, then pull elbows toward your hips; squeeze the upper back briefly, then lower under control until the shoulder blades open.";
+"ex.bentOverDumbbellRow.mistakes" = "Rounding the back and loading the low back; shrugging shoulders toward the ears; bouncing the torso to cheat; elbows flaring too wide so the back stops doing the work.";
+"ex.bentOverDumbbellRow.focus" = "Spine stays neutral; elbows pull toward the hips; torso stays steady without swinging.";
+"ex.bentOverDumbbellRow.easier" = "Use lighter dumbbells; hinge less deeply; practice the hip hinge and shoulder-blade set first.";
+"ex.bentOverDumbbellRow.stop" = "Low back cannot stay neutral; neck or shoulders tighten more each rep; the lift requires torso momentum.";
+
+// Shoulder press
+"ex.shoulderPress.name" = "Shoulder Press";
+"ex.shoulderPress.cues" = "Stand with feet planted, brace the core and tuck the chin slightly; dumbbells at shoulder height, palms forward; press straight overhead to near-full extension without locking; lower under control to about ear height.";
+"ex.shoulderPress.mistakes" = "Leaning back, turning it into an incline press; shrugging to cheat; lowering too fast and losing control; wrists bent back.";
+"ex.shoulderPress.focus" = "Ribs stay down; dumbbells press vertically; wrists stay neutral.";
+"ex.shoulderPress.easier" = "Use lighter dumbbells; one arm at a time with light weight; use a pain-free range.";
+"ex.shoulderPress.stop" = "Sharp shoulder pain; leaning back into the low back; arm numbness or weakness.";
+
+// Glute bridge
+"ex.gluteBridge.name" = "Glute Bridge";
+"ex.gluteBridge.cues" = "Lie face up, knees bent, feet shoulder-width, heels close to your hips; squeeze the glutes and drive the hips up until knees-to-shoulders form a line; pause and contract hard at the top; lower slowly until the lower back just touches — don't collapse at the bottom.";
+"ex.gluteBridge.mistakes" = "Pushing through the lower back instead of the glutes (back pain); hyperextending at the top; feet too far out (hamstring-dominant); tense neck.";
+"ex.gluteBridge.focus" = "Glutes drive the hips up; shoulders-hips-knees form a line; avoid hyperextending the low back.";
+"ex.gluteBridge.easier" = "Use a smaller range; place feet a little closer; shorten the top pause.";
+"ex.gluteBridge.stop" = "Low-back pressure; strong hamstring cramping; neck tension.";
+
+// Bird-dog
+"ex.birdDog.name" = "Bird-dog";
+"ex.birdDog.cues" = "Start on all fours, hands under shoulders, knees under hips, spine neutral; extend the opposite arm and leg to full length; keep the pelvis and back from shifting; return with control, lightly touching down before switching sides.";
+"ex.birdDog.mistakes" = "Pelvis tilting or body rocking as you extend; lifting too high and arching the lower back; dropping or raising the head; moving too fast to stay controlled.";
+"ex.birdDog.focus" = "Pelvis stays level; opposite arm and leg reach long; back stays neutral.";
+"ex.birdDog.easier" = "Move only one leg; move only one arm; shorten the hold.";
+"ex.birdDog.stop" = "Low back sags uncontrollably; radiating pain or numbness; shoulder or wrist support pain.";
+
+// Dead bug
+"ex.deadBug.name" = "Dead Bug";
+"ex.deadBug.cues" = "Lie face up, arms reaching to the ceiling, legs raised with knees bent 90°; press the lower back into the floor (a rolled towel helps confirm contact); slowly extend the opposite arm and leg toward the floor; return and switch sides, keeping the back flat throughout.";
+"ex.deadBug.mistakes" = "Lower back arching off the floor as you extend; holding your breath; moving too fast to keep the core engaged; forgetting to exhale.";
+"ex.deadBug.focus" = "Lower back stays on the floor; opposite arm and leg extend slowly; exhale while bracing.";
+"ex.deadBug.easier" = "Move arms only; tap one heel at a time; reduce range.";
+"ex.deadBug.stop" = "Low back lifts and cannot be controlled; back pain increases; breath-holding causes dizziness.";
+
+// Plank
+"ex.plank.name" = "Plank";
+"ex.plank.cues" = "Forearms down, elbows under the shoulders; straight line from head to heels, brace core and glutes; gaze slightly ahead and down, neck relaxed; breathe steadily and hold still.";
+"ex.plank.mistakes" = "Sagging hips (un-braced core, back pain); hips piked too high; head dropped or tilted back; holding the breath.";
+"ex.plank.focus" = "Shoulders-hips-ankles form a line; elbows under shoulders; breathe steadily.";
+"ex.plank.easier" = "Knee plank; hold 10-20 seconds; split the hold into short sets.";
+"ex.plank.stop" = "Back pain increases; breath cannot stay steady; shoulder or elbow pain.";
+
+// Reverse lunge
+"ex.reverseLunge.name" = "Reverse Lunge";
+"ex.reverseLunge.cues" = "Step one foot backward and touch the rear forefoot down lightly; load the front leg and descend, front knee tracking over toes; keep torso stable without side-to-side sway; drive through the front foot to stand, then switch sides.";
+"ex.reverseLunge.mistakes" = "Front knee caves inward; rear step too long and low back arches; body sways side to side; front heel lifts.";
+"ex.reverseLunge.focus" = "Front knee tracks over toes; rear foot touches lightly; torso stays stable.";
+"ex.reverseLunge.easier" = "Use a shorter step; do a half-range lunge; place hands on hips to help balance without equipment.";
+"ex.reverseLunge.stop" = "Sharp knee pain; hip-front pinching; balance cannot be controlled.";
+
+// Prone W raise
+"ex.proneWRaise.name" = "Prone W Raise";
+"ex.proneWRaise.cues" = "Lie face down on the mat, forehead lightly lifted or supported; bend elbows into a W shape; draw shoulder blades back and down first, then gently lift elbows and forearms; pause briefly, then lower slowly.";
+"ex.proneWRaise.mistakes" = "Jerking the head up; neck compensation; shrugging; lifting the chest by jamming the low back; lowering too fast.";
+"ex.proneWRaise.focus" = "Shoulder blades move back and down; neck stays relaxed; arms make a small W-shaped lift.";
+"ex.proneWRaise.easier" = "Only retract the shoulder blades; reduce lift height; start with 6-8 reps.";
+"ex.proneWRaise.stop" = "Neck pain or tension; back discomfort; needing momentum to lift.";
+
+// Side plank
+"ex.sidePlank.name" = "Side Plank";
+"ex.sidePlank.cues" = "Lie on one side, forearm down and elbow under shoulder; legs straight and stacked or staggered; lift hips so shoulder, hip, and ankle form a line; breathe steadily and avoid rolling forward or backward.";
+"ex.sidePlank.mistakes" = "Hips sag; shoulder shrugs; body rolls forward or backward; breath holding.";
+"ex.sidePlank.focus" = "Shoulders-hips-ankles form a line; elbow under shoulder; hips do not sag.";
+"ex.sidePlank.easier" = "Use a knee-supported side plank; hold 10-20 seconds; stagger the top foot in front for stability.";
+"ex.sidePlank.stop" = "Shoulder or elbow pain; side-back pain increases; breathing cannot stay steady.";
+
+// Cat-cow
+"ex.catCow.name" = "Cat-Cow";
+"ex.catCow.cues" = "Start on all fours, hands under shoulders and knees under hips; inhale and gently let the chest move forward as the back softens down; exhale and round the back, drawing the navel lightly toward the spine; move slowly and stay in a comfortable range.";
+"ex.catCow.mistakes" = "Moving fast and whipping the spine; overusing the neck; forcing range into the low back; shrugging the shoulders.";
+"ex.catCow.focus" = "Stable all-fours base; back rounds and softens slowly; neck follows the spine naturally.";
+"ex.catCow.easier" = "Use a smaller range; only pair breathing with tiny spinal motion; pad the knees with a towel.";
+"ex.catCow.stop" = "Pain sharpens; dizziness; wrist or knee support discomfort.";
+
+// Pelvic tilt
+"ex.pelvicTilt.name" = "Pelvic Tilt";
+"ex.pelvicTilt.cues" = "Lie face up with knees bent and feet flat; exhale and gently brace the lower abdomen, letting the low back move closer to the floor; imagine the pelvis rolling backward slightly, not lifting into a bridge; pause 1-2 seconds, then relax to neutral.";
+"ex.pelvicTilt.mistakes" = "Turning it into a bridge; holding the breath; pushing too hard and tightening the low back; tensing the neck and shoulders.";
+"ex.pelvicTilt.focus" = "Low back gently contacts the floor; pelvis rolls back slightly; exhale with light abdominal brace.";
+"ex.pelvicTilt.easier" = "Make the movement almost invisible; pair it with gentle breathing only; place a hand on the lower abdomen.";
+"ex.pelvicTilt.stop" = "Back pain increases; only breath-holding creates the motion; glutes or hamstrings cramp.";
+
+// Hip flexor stretch
+"ex.hipFlexorStretch.name" = "Hip Flexor Stretch";
+"ex.hipFlexorStretch.cues" = "Set one knee down and the opposite foot forward; gently tuck the pelvis as if the tailbone points down; keep the torso upright and move the hip slightly forward; feel a stretch at the front of the rear hip, without compressing the low back.";
+"ex.hipFlexorStretch.mistakes" = "Arching the low back for more range; front knee wobbling; leaning too far forward; kneeling knee pressure.";
+"ex.hipFlexorStretch.focus" = "Pelvis slightly tucked; front of rear hip opens; torso stays upright.";
+"ex.hipFlexorStretch.easier" = "Pad the knee; use a standing lunge stretch; hold for less time.";
+"ex.hipFlexorStretch.stop" = "Knee pressure pain; low-back compression; numbness or tingling.";

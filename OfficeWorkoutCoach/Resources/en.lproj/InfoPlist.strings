@@ -1,0 +1,4 @@
+"CFBundleDisplayName" = "luma";
+"CFBundleName" = "luma";
+"NSHumanReadableCopyright" = "";
+"NSUserNotificationsUsageDescription" = "Used to send workout and sedentary reminders. You can turn this off in Settings at any time.";

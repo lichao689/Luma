@@ -1,0 +1,256 @@
+/* OfficeWorkoutCoach — 简体中文 */
+
+// Workout types
+"workout.type.strengthA" = "力量 A";
+"workout.type.strengthB" = "力量 B";
+"workout.type.run" = "跑步";
+"workout.type.recovery" = "腰背恢复";
+"workout.type.minimal" = "8 分钟最低版";
+"workout.type.rest" = "休息";
+
+// Completion
+"completion.full" = "完整";
+"completion.partial" = "部分";
+"completion.minimal" = "最低版";
+
+// Body feeling
+"feeling.normal" = "正常";
+"feeling.backTight" = "腰紧";
+"feeling.legSore" = "腿酸";
+"feeling.fatigue" = "疲劳";
+
+// Goal labels
+"goal.strength" = "力量";
+"goal.run" = "跑步";
+"goal.recovery" = "腰背恢复";
+
+// Reminder mode
+"reminder.mode.light" = "轻提醒";
+"reminder.mode.standard" = "标准提醒";
+"reminder.mode.strict" = "强监督";
+
+// Popover
+"popover.today.title" = "今日建议";
+"popover.quick.title" = "快速记录";
+"popover.progress.title" = "本周进度";
+"popover.records" = "查看记录";
+"popover.settings" = "设置";
+"popover.cta.start" = "开始";
+"popover.cta.run" = "跑步已完成";
+"popover.cta.recovery" = "做腰背恢复";
+"popover.cta.minimal" = "做 8 分钟最低版";
+"popover.cta.rest" = "今天休息";
+
+// Recommendation
+"rec.back.title" = "先做腰背恢复";
+"rec.back.reason" = "你最近提到腰部不适,今天优先恢复,避免硬拉和弓步。";
+"rec.afterRun.title" = "跑步后做腰背恢复";
+"rec.afterRun.reason" = "今天已经跑步,搭配一组腰背恢复,不再加腿部力量。";
+"rec.run.title" = "本周力量已达标,可以跑步";
+"rec.maintain.title" = "今天做腰背恢复或休息";
+"rec.maintain.reason" = "本周力量与跑步都已达标,保持恢复即可。";
+"rec.minimal.title" = "做 8 分钟最低版";
+
+// Quick log
+"quicklog.complete" = "本次完成";
+"quicklog.minimalNote" = "这一项默认按最低强度记录,点保存即可。";
+"quicklog.save" = "保存";
+"quicklog.cancel" = "取消";
+"field.duration" = "时长(分钟)";
+"field.completion" = "完成度";
+"field.intensity" = "主观强度";
+"field.feeling" = "身体感觉";
+"field.notes" = "备注(可选)";
+
+// Summary
+"summary.title" = "记录与总结";
+"summary.week" = "本周完成";
+"summary.recent" = "最近 7 天";
+"summary.empty" = "还没有记录。从菜单栏快速记录一次吧。";
+"summary.delete" = "删除这条记录";
+
+// Common
+"common.done" = "完成";
+"common.back" = "返回";
+
+// Settings
+"settings.goals" = "目标";
+"settings.reminders" = "提醒";
+"settings.window" = "时间窗";
+"settings.weekly" = "每周目标";
+"settings.mode" = "提醒模式";
+"settings.flexible" = "当日运动柔性提醒";
+"settings.sedentary" = "久坐提醒";
+"settings.threshold" = "连续操作多久后提醒";
+"settings.off" = "关闭";
+"settings.min90" = "90 分钟";
+"settings.min75" = "75 分钟";
+"settings.min60" = "60 分钟";
+"settings.workWindow" = "工作时间窗";
+"settings.start" = "开始";
+"settings.end" = "结束";
+"settings.weekdays" = "工作日";
+
+// Notifications
+"notif.action.start" = "开始 8 分钟";
+"notif.action.later" = "稍后提醒";
+"notif.action.rest" = "今天休息";
+"notif.flex.title" = "今天还没运动";
+"notif.flex.body" = "现在适合做一个 8 分钟最低版吗?";
+"notif.weekly.title" = "本周力量还差一些";
+"notif.weekly.body" = "建议今天做力量 B 或最低版,把目标补齐。";
+"notif.sedentary.title" = "坐久了";
+"notif.sedentary.body" = "做一组腰背恢复:猫牛式、臀桥、鸟狗、髋屈肌拉伸。";
+"voice.sedentary" = "该站起来活动十分钟了。先离开屏幕,做护腰、力量和远眺。";
+"dialog.sedentary.title" = "健康微休息";
+"dialog.sedentary.body" = "你已连续工作超过 1 小时,提醒后仍未休息。现在站起来活动 10 分钟。";
+"dialog.sedentary.standup" = "我现在起身";
+"dialog.sedentary.snooze" = "延后 10 分钟";
+
+// Exercise guide — window & sections
+"scene.guide.title" = "动作示意";
+"popover.guide" = "动作示意";
+"guide.title" = "动作示意";
+"guide.empty.title" = "选择一个动作";
+"guide.empty.subtitle" = "左侧挑一个动作,看怎么练。";
+"guide.empty.cues" = "(暂无说明)";
+"guide.media.placeholder" = "暂无示意图,先看下方文字说明";
+"guide.section.planA" = "力量 A";
+"guide.section.planB" = "力量 B";
+"guide.section.recovery" = "腰背恢复";
+"guide.section.cues" = "动作要领";
+"guide.section.focus" = "图上重点";
+"guide.section.easier" = "降低难度";
+"guide.section.mistakes" = "常见错误";
+"guide.section.stop" = "不适时停止";
+"guide.section.targets" = "主要练:";
+
+// Muscle groups
+"muscle.legs" = "腿";
+"muscle.back" = "背部";
+"muscle.chest" = "胸";
+"muscle.core" = "核心";
+"muscle.shoulders" = "肩";
+"muscle.glutes" = "臀部";
+
+// 动作说明:每条 cue / mistake 用分号(;)分隔,会拆成列表展示。
+
+// 高脚杯深蹲
+"ex.gobletSquat.name" = "高脚杯深蹲";
+"ex.gobletSquat.cues" = "双手捧一个哑铃竖立在胸前,贴近身体;双脚与肩同宽,脚尖略外八;下蹲时先屈髋再屈膝,膝盖跟随脚尖方向;蹲到大腿与地面平行或略低,全程挺胸、腰背保持自然弧度;起身时脚踩实地,臀部与上半身一起抬起。";
+"ex.gobletSquat.mistakes" = "膝盖内扣或脚跟离地;弯腰驼背,把负重压到腰上;蹲得太浅没到平行;起立时先抬屁股再起上身(变成早安式)。";
+"ex.gobletSquat.focus" = "膝盖跟随脚尖方向;胸口立起、腰背中立;脚跟踩实地面。";
+"ex.gobletSquat.easier" = "减轻哑铃重量;必要时改为徒手深蹲;减少下蹲深度但保持控制。";
+"ex.gobletSquat.stop" = "膝盖刺痛或腰部顶痛;无法保持脚跟着地;动作越做越歪。";
+
+// 罗马尼亚硬拉
+"ex.romanianDeadlift.name" = "罗马尼亚硬拉";
+"ex.romanianDeadlift.cues" = "双手持哑铃自然下垂,双脚与髋同宽,微屈膝锁定;以髋为轴向后推臀,哑铃贴着大腿前侧下放;下放到大腿后侧有拉伸感即可(通常到小腿中段),膝盖角度基本不变;收紧臀部、蹬地起身,到自然站立即可,不要往后顶腰。";
+"ex.romanianDeadlift.mistakes" = "传统深蹲式下蹲(弯腰+屈膝太多);下放时离腿太远,负荷压到腰背;起立时过度顶腰;全程弯腰驼背。";
+"ex.romanianDeadlift.focus" = "髋向后推,不是膝盖先蹲;哑铃贴近腿;背部保持中立。";
+"ex.romanianDeadlift.easier" = "先做徒手髋铰链;只下放到膝盖附近;用更轻哑铃或空手练路径。";
+"ex.romanianDeadlift.stop" = "腰部尖锐疼痛;腿后侧麻木或放射感;背部无法保持中立。";
+
+// 俯卧撑
+"ex.pushUp.name" = "俯卧撑";
+"ex.pushUp.cues" = "双手略宽于肩,掌根在胸口正下方;从头到脚跟一条直线,收紧核心、夹紧臀部;下落时手肘与身体约 45°,胸口接近地面;推起时把地面推远,到手臂自然伸直。";
+"ex.pushUp.mistakes" = "塌腰或撅屁股(核心没收紧);手肘完全外展成 T 字,伤肩;只下落一半,幅度不够;脖子先探下去。";
+"ex.pushUp.focus" = "身体从头到脚跟一条线;手肘约 45°;胸口主动靠近地面。";
+"ex.pushUp.easier" = "跪姿俯卧撑;减少下放深度;减少次数但保持全程控制。";
+"ex.pushUp.stop" = "肩前侧刺痛;腰塌无法控制;手腕疼痛明显。";
+
+// 站姿俯身哑铃划船
+"ex.bentOverDumbbellRow.name" = "俯身哑铃划船";
+"ex.bentOverDumbbellRow.cues" = "双手各持一个哑铃,双脚与髋同宽,膝盖微屈;先做髋铰链让躯干前倾,背部保持中立;手臂自然下垂,肩胛先向后收,再把手肘沿身体拉向后腰;顶峰轻轻挤压背部,再控制下放到肩胛展开。";
+"ex.bentOverDumbbellRow.mistakes" = "弯腰驼背让腰承担重量;耸肩把肩拉向耳朵;身体上下甩动借力;手肘向外张太多,背部发力感丢失。";
+"ex.bentOverDumbbellRow.focus" = "背部保持中立;手肘拉向后腰;躯干稳定不甩动。";
+"ex.bentOverDumbbellRow.easier" = "减轻哑铃重量;减少前倾角度;先练髋铰链和肩胛后收。";
+"ex.bentOverDumbbellRow.stop" = "下背无法保持中立;肩颈越练越紧;必须甩动身体才能拉起。";
+
+// 哑铃肩推
+"ex.shoulderPress.name" = "哑铃肩推";
+"ex.shoulderPress.cues" = "站姿双脚踩稳,收核心、微收下颌;哑铃举到肩两侧,掌心朝前;垂直向上推,到手臂自然伸直但不要锁死;控制下落到哑铃约在耳朵高度。";
+"ex.shoulderPress.mistakes" = "推举时过度后仰,把肩推变成上斜胸推;耸肩借力;下落太猛、失控;手腕过度后翻。";
+"ex.shoulderPress.focus" = "肋骨不外翻;哑铃垂直上推;手腕保持中立。";
+"ex.shoulderPress.easier" = "减轻哑铃重量;单臂轻重量;减少动作幅度到无痛范围。";
+"ex.shoulderPress.stop" = "肩关节刺痛;明显后仰顶腰;手臂麻木或无力。";
+
+// 臀桥
+"ex.gluteBridge.name" = "臀桥";
+"ex.gluteBridge.cues" = "仰卧屈膝,双脚与肩同宽踩地,脚跟靠近臀部;收紧臀部把髋顶到最高,膝盖到肩膀成一条直线;顶峰停顿,主动夹紧臀部;缓慢下放,下背轻触地即可,不要一放下就松垮。";
+"ex.gluteBridge.mistakes" = "用腰硬顶代替臀部发力(腰疼);顶到最高后过度挺腰;脚放得太远,变成腘绳肌主导;脖子紧张。";
+"ex.gluteBridge.focus" = "臀部发力向上;肩-髋-膝成一条线;顶峰不要过度顶腰。";
+"ex.gluteBridge.easier" = "只抬到半程;双脚靠近臀部;减少停顿时间。";
+"ex.gluteBridge.stop" = "腰部顶痛;腿后侧抽筋明显;脖子紧张到不舒服。";
+
+// 鸟狗式
+"ex.birdDog.name" = "鸟狗式";
+"ex.birdDog.cues" = "四点跪姿,手在肩下、膝在髋下,脊柱保持中立;同时伸出对侧手和腿,到完全伸直;过程中骨盆不晃、背部不塌;原路收回,手膝轻触地再换另一侧。";
+"ex.birdDog.mistakes" = "伸腿时身体晃动、骨盆侧倾;抬手抬腿过高导致塌腰;低头或仰头破坏颈椎中立;动作太快失控。";
+"ex.birdDog.focus" = "骨盆保持水平;对侧手脚伸长;背部不塌不拱。";
+"ex.birdDog.easier" = "只伸腿;只伸手;缩短停顿时间。";
+"ex.birdDog.stop" = "腰塌控制不住;出现放射痛或麻木;肩腕支撑疼痛。";
+
+// 死虫式
+"ex.deadBug.name" = "死虫式";
+"ex.deadBug.cues" = "仰卧,双手举向天花板,双腿抬起屈膝 90°;腰部贴实地面(可在腰下放一条卷毛巾确认);缓慢伸出对侧手脚,到接近地面;原路收回,再换另一侧,全程腰部不离地。";
+"ex.deadBug.mistakes" = "伸腿时腰部弓起、离开地面;屏气;动作太快失去核心控制;忘了呼气配合。";
+"ex.deadBug.focus" = "腰背贴地;对侧手脚慢慢伸展;呼气时保持核心收紧。";
+"ex.deadBug.easier" = "只移动手臂;只脚跟点地;减少伸展幅度。";
+"ex.deadBug.stop" = "腰背离地且无法控制;腰痛加重;憋气头晕。";
+
+// 平板支撑
+"ex.plank.name" = "平板支撑";
+"ex.plank.cues" = "前臂撑地,肘在肩正下方;从头到脚跟一条直线,收紧核心与臀部;目光看向地面稍前方,脖子放松;自然呼吸,保持稳定。";
+"ex.plank.mistakes" = "塌腰(核心没收紧,腰疼);撅屁股太高;低头或仰头;憋气。";
+"ex.plank.focus" = "肩-髋-踝成一条线;肘在肩正下方;保持自然呼吸。";
+"ex.plank.easier" = "膝支撑平板;缩短到 10-20 秒;分成多组短时间保持。";
+"ex.plank.stop" = "腰痛加重;憋气无法维持;肩肘疼痛明显。";
+
+// 反向弓步
+"ex.reverseLunge.name" = "反向弓步";
+"ex.reverseLunge.cues" = "站立后单脚向后迈一步,后脚前脚掌轻点地;前腿承重下蹲,前膝跟随脚尖方向;躯干保持稳定,不要左右晃;前脚蹬地回到站立,再换另一侧。";
+"ex.reverseLunge.mistakes" = "前膝内扣;后脚迈得太远导致腰塌;身体左右晃动;前脚脚跟离地。";
+"ex.reverseLunge.focus" = "前膝跟随脚尖;后脚轻点地;躯干稳定不侧倒。";
+"ex.reverseLunge.easier" = "缩短步幅;只做半程;双手放在髋部帮助保持平衡。";
+"ex.reverseLunge.stop" = "膝盖刺痛;髋前侧夹痛;身体晃动无法控制。";
+
+// 俯卧 W 提拉
+"ex.proneWRaise.name" = "俯卧 W 提拉";
+"ex.proneWRaise.cues" = "俯卧在瑜伽垫上,额头轻轻离地或垫在手巾上;手肘弯曲成 W 形;先把肩胛向后下方收,再轻轻抬起手肘和前臂;顶峰停一下,缓慢放回。";
+"ex.proneWRaise.mistakes" = "猛抬头、脖子代偿;耸肩;用腰硬抬胸;下放太快。";
+"ex.proneWRaise.focus" = "肩胛向后下方收;脖子放松;手臂成 W 形小幅抬起。";
+"ex.proneWRaise.easier" = "只做肩胛后收不抬手;减少抬起高度;每组先做 6-8 次。";
+"ex.proneWRaise.stop" = "颈部紧张疼痛;腰背不适;必须甩动才能抬起。";
+
+// 侧平板
+"ex.sidePlank.name" = "侧平板";
+"ex.sidePlank.cues" = "侧卧,前臂撑地,肘在肩正下方;双腿伸直叠放或前后错开;抬起髋部,让肩、髋、脚踝接近一条线;自然呼吸,保持身体不向前后翻。";
+"ex.sidePlank.mistakes" = "髋部下沉;肩膀耸起;身体向前或向后翻;憋气硬撑。";
+"ex.sidePlank.focus" = "肩-髋-踝成一条线;肘在肩正下方;髋部不下沉。";
+"ex.sidePlank.easier" = "膝支撑侧平板;缩短到 10-20 秒;上脚放前方帮助稳定。";
+"ex.sidePlank.stop" = "肩肘疼痛;腰侧疼痛加重;无法保持呼吸。";
+
+// 猫牛式
+"ex.catCow.name" = "猫牛式";
+"ex.catCow.cues" = "四点跪姿,手在肩下、膝在髋下;吸气时胸口轻轻向前,背部温和下沉;呼气时把背圆起,像把肚脐轻轻收向脊柱;全程慢速,只做到舒服范围。";
+"ex.catCow.mistakes" = "动作太快像甩腰;用脖子大幅仰头或低头;为了幅度强行挤压腰椎;肩膀耸起。";
+"ex.catCow.focus" = "四点支撑稳定;背部圆起和下沉都要慢;脖子跟随脊柱自然移动。";
+"ex.catCow.easier" = "缩小活动幅度;只做呼吸配合的轻微背部活动;膝盖下垫毛巾减轻压力。";
+"ex.catCow.stop" = "疼痛被拉尖;头晕;手腕或膝盖支撑不舒服。";
+
+// 骨盆后倾
+"ex.pelvicTilt.name" = "骨盆后倾";
+"ex.pelvicTilt.cues" = "仰卧屈膝,双脚踩地;呼气时轻轻收紧下腹,让腰背更贴近地面;想象骨盆向后卷一点点,不是用力抬臀;停 1-2 秒后放松回中立。";
+"ex.pelvicTilt.mistakes" = "用臀桥代替骨盆控制;憋气;用力过猛导致腰部紧张;肩颈一起发力。";
+"ex.pelvicTilt.focus" = "腰背轻贴地;骨盆小幅后卷;呼气配合下腹收紧。";
+"ex.pelvicTilt.easier" = "减少幅度到几乎看不见;只配合呼吸做轻微后倾;把手放在下腹感受发力。";
+"ex.pelvicTilt.stop" = "腰痛加重;下腹无法控制只会憋气;臀腿抽筋。";
+
+// 髋屈肌拉伸
+"ex.hipFlexorStretch.name" = "髋屈肌拉伸";
+"ex.hipFlexorStretch.cues" = "一膝跪地一脚在前,前脚踩稳;骨盆微微后倾,像把尾骨向下收;身体保持直立,轻轻把髋向前送;后侧腿髋前方有拉伸感即可,不要压腰。";
+"ex.hipFlexorStretch.mistakes" = "靠塌腰换幅度;前膝乱晃;身体过度前倾;跪地膝盖被压得疼。";
+"ex.hipFlexorStretch.focus" = "骨盆微后倾;髋前侧被拉开;躯干保持直立。";
+"ex.hipFlexorStretch.easier" = "膝盖下垫毛巾;站姿弓步拉伸;缩短保持时间。";
+"ex.hipFlexorStretch.stop" = "膝盖压痛;腰椎挤压感;腿部麻木或刺痛。";
