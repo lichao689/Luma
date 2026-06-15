@@ -7,6 +7,7 @@ import OfficeWorkoutLogic
 struct OfficeWorkoutCoachApp: App {
     @StateObject private var store: WorkoutStore
     @StateObject private var notifier = NotificationManager.sharedInstance
+    @State private var badgeClockTick = 0
     private static let menuBarTemplateImage: NSImage? = {
         guard let url = Bundle.main.url(forResource: "AppMenuBarIconTemplate", withExtension: "png"),
               let image = NSImage(contentsOf: url) else {
@@ -58,58 +59,79 @@ struct OfficeWorkoutCoachApp: App {
         .defaultSize(width: 800, height: 560)
     }
 
-    /// Menu-bar badge: icon + today's unmet-goal count.
+    /// Menu-bar badge: icon + three colored progress chips.
     ///
-    /// Shows "还差 N" where N = today's goals not yet met (strength + recovery
-    /// daily + run this week). When all met, the icon goes solid and the count
-    /// is hidden. This answers "今天还差几样" at a glance — broader than the old
-    /// strength-only `x/y` which ignored runs/recovery.
+    /// Layout: `💪 0/1 3/7 · 0/2 5/14 · 1/2`
+    /// Each number pair sits in a colored capsule: green when met, red when not.
+    /// Strength/recovery show today/week; run shows week only.
     /// Reading `store.changeToken` creates the SwiftUI dependency that makes
     /// the badge refresh after each log/delete.
     @ViewBuilder private var badgeLabel: some View {
         let _ = store.changeToken   // observe mutations
+        let _ = badgeClockTick      // refresh day/week rollover while app stays open
         let stats = store.currentStats()
         let goal = UserGoalValues(store.fetchGoal())
-        let unmet = todayUnmetCount(stats: stats, goal: goal)
-        let allMet = unmet == 0
+
         HStack(spacing: 3) {
-            menuBarIcon(met: allMet)
-            if !allMet {
-                Text("\(unmet)")
-                    .monospacedDigit()
-            }
+            menuBarIcon(allMet: allGoalsMet(stats: stats, goal: goal))
+            // 力量: today/week
+            chipPair(today: stats.strengthCountToday, todayTarget: goal.dailyStrengthTarget,
+                     week: stats.strengthCount, weekTarget: goal.weeklyStrengthTarget)
+            Text("·").foregroundStyle(.secondary)
+            // 恢复: today/week
+            chipPair(today: stats.recoveryCountToday, todayTarget: goal.dailyRecoveryTarget,
+                     week: stats.recoveryCount, weekTarget: goal.weeklyRecoveryTarget)
+            Text("·").foregroundStyle(.secondary)
+            // 跑步: week only
+            chip(week: stats.runCount, weekTarget: goal.weeklyRunTarget)
         }
-        .help(badgeHelp(stats: stats, goal: goal))
+        .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
+            badgeClockTick &+= 1
+        }
     }
 
-    /// Count of today's goals not yet met (for the badge number).
-    private func todayUnmetCount(stats: WorkoutStats, goal: UserGoalValues) -> Int {
-        var n = 0
-        if stats.strengthCountToday < goal.dailyStrengthTarget { n += 1 }
-        if stats.recoveryCountToday < goal.dailyRecoveryTarget { n += 1 }
-        if stats.runCount < goal.weeklyRunTarget { n += 1 }
-        return n
+    /// Whether ALL goals (today + week) are met — drives the icon fill state.
+    private func allGoalsMet(stats: WorkoutStats, goal: UserGoalValues) -> Bool {
+        stats.strengthCountToday >= goal.dailyStrengthTarget &&
+        stats.recoveryCountToday >= goal.dailyRecoveryTarget &&
+        stats.runCount >= goal.weeklyRunTarget
     }
 
-    /// Hover tooltip summarizing today/week progress.
-    private func badgeHelp(stats: WorkoutStats, goal: UserGoalValues) -> String {
-        [
-            "力量 \(stats.strengthCountToday)/\(goal.dailyStrengthTarget) 今日 · \(stats.strengthCount)/\(goal.weeklyStrengthTarget) 本周",
-            "恢复 \(stats.recoveryCountToday)/\(goal.dailyRecoveryTarget) 今日 · \(stats.recoveryCount)/\(goal.weeklyRecoveryTarget) 本周",
-            "跑步 \(stats.runCount)/\(goal.weeklyRunTarget) 本周"
-        ].joined(separator: "\n")
+    /// One activity with today + week chips, e.g. `0/1 3/7`.
+    @ViewBuilder private func chipPair(today: Int, todayTarget: Int, week: Int, weekTarget: Int) -> some View {
+        chip(value: today, target: todayTarget, met: today >= todayTarget)
+        chip(value: week, target: weekTarget, met: week >= weekTarget)
     }
 
-    @ViewBuilder private func menuBarIcon(met: Bool) -> some View {
+    /// Week-only chip (for run), computing met from week count vs target.
+    @ViewBuilder private func chip(week: Int, weekTarget: Int) -> some View {
+        chip(value: week, target: weekTarget, met: week >= weekTarget)
+    }
+
+    /// A single colored count chip: green bg when met, red bg when not.
+    @ViewBuilder private func chip(value: Int, target: Int, met: Bool) -> some View {
+        Text("\(value)/\(target)")
+            .monospacedDigit()
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 3)
+            .padding(.vertical, 1)
+            .background(
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(met ? Color.green : Color.red)
+            )
+    }
+
+    @ViewBuilder private func menuBarIcon(allMet: Bool) -> some View {
         if let image = Self.menuBarTemplateImage {
             Image(nsImage: image)
                 .renderingMode(.template)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 18, height: 18)
-                .opacity(met ? 1.0 : 0.82)
+                .opacity(allMet ? 1.0 : 0.82)
         } else {
-            Image(systemName: met ? "figure.strengthtraining.traditional.fill"
+            Image(systemName: allMet ? "figure.strengthtraining.traditional.fill"
                                   : "figure.strengthtraining.traditional")
         }
     }

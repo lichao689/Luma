@@ -14,12 +14,6 @@ final class WorkoutStore: ObservableObject {
     /// automatically. Without this, the badge wouldn't update after a log.
     @Published private(set) var changeToken: Int = 0
 
-    /// Shared container for places (like the Settings scene) that can't reach
-    /// the environment-injected instance. Created lazily on first access.
-    static let sharedContainer: WorkoutStore = {
-        do { return try WorkoutStore() } catch { fatalError("Failed to create WorkoutStore: \(error)") }
-    }()
-
     init() throws {
         let schema = Schema([WorkoutSession.self, UserGoal.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
@@ -52,6 +46,23 @@ final class WorkoutStore: ObservableObject {
         context.insert(goal)
         try? context.save()
         return goal
+    }
+
+    func updateGoal(_ values: UserGoalValues) {
+        let goal = fetchGoal()
+        goal.dailyStrengthTarget = values.dailyStrengthTarget
+        goal.weeklyStrengthTarget = values.weeklyStrengthTarget
+        goal.dailyRecoveryTarget = values.dailyRecoveryTarget
+        goal.weeklyRecoveryTarget = values.weeklyRecoveryTarget
+        goal.weeklyRunTarget = values.weeklyRunTarget
+        goal.sedentaryReminderMinutes = values.sedentaryReminderMinutes
+        goal.enableFlexibleReminder = values.enableFlexibleReminder
+        goal.reminderMode = values.reminderMode
+        goal.workStartMinutes = values.workStartMinutes
+        goal.workEndMinutes = values.workEndMinutes
+        goal.workWeekdays = values.workWeekdays
+        try? goal.modelContext?.save()
+        notifyChanged()
     }
 
     // MARK: - Sessions

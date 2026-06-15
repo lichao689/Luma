@@ -11,7 +11,6 @@ struct SettingsView: Scene {
     var body: some Scene {
         Settings {
             SettingsContent()
-                .environmentObject(WorkoutStore.sharedContainer)
         }
     }
 }
@@ -108,19 +107,8 @@ private struct SettingsContent: View {
     // MARK: - Persistence
 
     private func persist() {
-        let goal = store.fetchGoal()
-        goal.dailyStrengthTarget = values.dailyStrengthTarget
-        goal.weeklyStrengthTarget = values.weeklyStrengthTarget
-        goal.dailyRecoveryTarget = values.dailyRecoveryTarget
-        goal.weeklyRecoveryTarget = values.weeklyRecoveryTarget
-        goal.weeklyRunTarget = values.weeklyRunTarget
-        goal.sedentaryReminderMinutes = values.sedentaryReminderMinutes
-        goal.enableFlexibleReminder = values.enableFlexibleReminder
-        goal.reminderMode = values.reminderMode
-        goal.workStartMinutes = values.workStartMinutes
-        goal.workEndMinutes = values.workEndMinutes
-        goal.workWeekdays = values.workWeekdays
-        try? goal.modelContext?.save()
+        guard loaded else { return }
+        store.updateGoal(values)
         NotificationManager.sharedInstance.refresh(from: values)
     }
 
