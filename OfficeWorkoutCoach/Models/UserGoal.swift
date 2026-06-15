@@ -2,17 +2,20 @@ import Foundation
 import SwiftData
 import OfficeWorkoutLogic
 
-/// A singleton row holding the user's weekly targets and reminder preferences.
+/// A singleton row holding the user's goals and reminder preferences.
 ///
+/// Strength & recovery have BOTH daily and weekly targets; run is weekly only.
 /// Always read the first row; the app seeds one on first launch. Bridges into
 /// `UserGoalValues` (logic layer) for computation.
 @Model
 final class UserGoal {
     @Attribute(.unique) var id: UUID
 
+    var dailyStrengthTarget: Int
     var weeklyStrengthTarget: Int
-    var weeklyRunTarget: Int
+    var dailyRecoveryTarget: Int
     var weeklyRecoveryTarget: Int
+    var weeklyRunTarget: Int
     var sedentaryReminderMinutes: Int
     var enableFlexibleReminder: Bool
     var reminderModeRaw: String
@@ -22,9 +25,11 @@ final class UserGoal {
 
     init(
         id: UUID = UUID(),
-        weeklyStrengthTarget: Int = 3,
+        dailyStrengthTarget: Int = 1,
+        weeklyStrengthTarget: Int = 7,
+        dailyRecoveryTarget: Int = 2,
+        weeklyRecoveryTarget: Int = 14,
         weeklyRunTarget: Int = 2,
-        weeklyRecoveryTarget: Int = 5,
         sedentaryReminderMinutes: Int = 60,
         enableFlexibleReminder: Bool = true,
         reminderMode: ReminderMode = .standard,
@@ -33,9 +38,11 @@ final class UserGoal {
         workWeekdays: [Int] = [2, 3, 4, 5, 6]
     ) {
         self.id = id
+        self.dailyStrengthTarget = dailyStrengthTarget
         self.weeklyStrengthTarget = weeklyStrengthTarget
-        self.weeklyRunTarget = weeklyRunTarget
+        self.dailyRecoveryTarget = dailyRecoveryTarget
         self.weeklyRecoveryTarget = weeklyRecoveryTarget
+        self.weeklyRunTarget = weeklyRunTarget
         self.sedentaryReminderMinutes = sedentaryReminderMinutes
         self.enableFlexibleReminder = enableFlexibleReminder
         self.reminderModeRaw = reminderMode.rawValue
@@ -53,9 +60,11 @@ final class UserGoal {
 extension UserGoalValues {
     init(_ goal: UserGoal) {
         self.init(
+            dailyStrengthTarget: goal.dailyStrengthTarget,
             weeklyStrengthTarget: goal.weeklyStrengthTarget,
-            weeklyRunTarget: goal.weeklyRunTarget,
+            dailyRecoveryTarget: goal.dailyRecoveryTarget,
             weeklyRecoveryTarget: goal.weeklyRecoveryTarget,
+            weeklyRunTarget: goal.weeklyRunTarget,
             sedentaryReminderMinutes: goal.sedentaryReminderMinutes,
             enableFlexibleReminder: goal.enableFlexibleReminder,
             reminderMode: goal.reminderMode,

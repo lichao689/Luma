@@ -254,3 +254,4 @@
 "ex.hipFlexorStretch.focus" = "Pelvis slightly tucked; front of rear hip opens; torso stays upright.";
 "ex.hipFlexorStretch.easier" = "Pad the knee; use a standing lunge stretch; hold for less time.";
 "ex.hipFlexorStretch.stop" = "Knee pressure pain; low-back compression; numbness or tingling.";
+"settings.daily" = "Daily goals";

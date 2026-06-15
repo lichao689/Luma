@@ -53,11 +53,14 @@ struct SummaryView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 16) {
                 statBadge(String(localized: "goal.strength", defaultValue: "力量"),
-                          stats.strengthCount, goal.weeklyStrengthTarget)
+                          today: stats.strengthCountToday, todayTarget: goal.dailyStrengthTarget,
+                          week: stats.strengthCount, weekTarget: goal.weeklyStrengthTarget)
+                statBadge(String(localized: "goal.recovery", defaultValue: "恢复"),
+                          today: stats.recoveryCountToday, todayTarget: goal.dailyRecoveryTarget,
+                          week: stats.recoveryCount, weekTarget: goal.weeklyRecoveryTarget)
                 statBadge(String(localized: "goal.run", defaultValue: "跑步"),
-                          stats.runCount, goal.weeklyRunTarget)
-                statBadge(String(localized: "goal.recovery", defaultValue: "腰背恢复"),
-                          stats.recoveryCount, goal.weeklyRecoveryTarget)
+                          today: nil, todayTarget: nil,
+                          week: stats.runCount, weekTarget: goal.weeklyRunTarget)
             }
             trendChart
                 .frame(height: 90)
@@ -160,21 +163,30 @@ struct SummaryView: View {
         }
     }
 
-    private func statBadge(_ label: String, _ done: Int, _ target: Int) -> some View {
-        VStack {
-            Text("\(done)/\(target)").font(.title3).monospacedDigit()
+    private func statBadge(_ label: String, today: Int?, todayTarget: Int?, week: Int, weekTarget: Int) -> some View {
+        VStack(spacing: 1) {
             Text(label).font(.caption).foregroundStyle(.secondary)
+            if let t = today, let tt = todayTarget {
+                Text("\(t)/\(tt) 今日").font(.caption2).monospacedDigit().foregroundStyle(t >= tt ? .green : .secondary)
+            }
+            Text("\(week)/\(weekTarget) 本周").font(.callout).monospacedDigit()
+                .foregroundStyle(week >= weekTarget ? .green : .primary)
         }
     }
 
     /// A rule-based weekly summary. (LLM-based summaries are Phase 5+.)
     private var generatedSummary: String {
         var parts: [String] = []
-        parts.append("本周力量 \(stats.strengthCount)、跑步 \(stats.runCount)、腰背恢复 \(stats.recoveryCount)。")
-        if stats.strengthCount >= goal.weeklyStrengthTarget && stats.runCount >= goal.weeklyRunTarget {
+        parts.append("本周力量 \(stats.strengthCount)/\(goal.weeklyStrengthTarget)、恢复 \(stats.recoveryCount)/\(goal.weeklyRecoveryTarget)、跑步 \(stats.runCount)/\(goal.weeklyRunTarget)。")
+        let strengthMet = stats.strengthCount >= goal.weeklyStrengthTarget
+        let runMet = stats.runCount >= goal.weeklyRunTarget
+        if strengthMet && runMet {
             parts.append("整体完成度很好,下周保持当前频率。")
-        } else if stats.strengthCount < goal.weeklyStrengthTarget {
-            parts.append("力量还差 \(goal.weeklyStrengthTarget - stats.strengthCount) 次,建议补齐。")
+        } else {
+            var shorts: [String] = []
+            if !strengthMet { shorts.append("力量 \(goal.weeklyStrengthTarget - stats.strengthCount)") }
+            if !runMet { shorts.append("跑步 \(goal.weeklyRunTarget - stats.runCount)") }
+            parts.append("还差 " + shorts.joined(separator: "、") + " 次。")
         }
         return parts.joined()
     }

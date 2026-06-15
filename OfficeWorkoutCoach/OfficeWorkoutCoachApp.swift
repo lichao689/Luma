@@ -58,23 +58,46 @@ struct OfficeWorkoutCoachApp: App {
         .defaultSize(width: 800, height: 560)
     }
 
-    /// Menu-bar badge: icon + weekly strength progress, e.g. "🏃 2/3".
-    /// We use an explicit HStack rather than Label because MenuBarExtra hides
-    /// Label text by default — only the icon would show.
+    /// Menu-bar badge: icon + today's unmet-goal count.
+    ///
+    /// Shows "还差 N" where N = today's goals not yet met (strength + recovery
+    /// daily + run this week). When all met, the icon goes solid and the count
+    /// is hidden. This answers "今天还差几样" at a glance — broader than the old
+    /// strength-only `x/y` which ignored runs/recovery.
     /// Reading `store.changeToken` creates the SwiftUI dependency that makes
     /// the badge refresh after each log/delete.
     @ViewBuilder private var badgeLabel: some View {
         let _ = store.changeToken   // observe mutations
         let stats = store.currentStats()
         let goal = UserGoalValues(store.fetchGoal())
-        let done = min(stats.strengthCount, goal.weeklyStrengthTarget)
-        let target = goal.weeklyStrengthTarget
-        let met = done >= target
+        let unmet = todayUnmetCount(stats: stats, goal: goal)
+        let allMet = unmet == 0
         HStack(spacing: 3) {
-            menuBarIcon(met: met)
-            Text("\(done)/\(target)")
-                .monospacedDigit()
+            menuBarIcon(met: allMet)
+            if !allMet {
+                Text("\(unmet)")
+                    .monospacedDigit()
+            }
         }
+        .help(badgeHelp(stats: stats, goal: goal))
+    }
+
+    /// Count of today's goals not yet met (for the badge number).
+    private func todayUnmetCount(stats: WorkoutStats, goal: UserGoalValues) -> Int {
+        var n = 0
+        if stats.strengthCountToday < goal.dailyStrengthTarget { n += 1 }
+        if stats.recoveryCountToday < goal.dailyRecoveryTarget { n += 1 }
+        if stats.runCount < goal.weeklyRunTarget { n += 1 }
+        return n
+    }
+
+    /// Hover tooltip summarizing today/week progress.
+    private func badgeHelp(stats: WorkoutStats, goal: UserGoalValues) -> String {
+        [
+            "力量 \(stats.strengthCountToday)/\(goal.dailyStrengthTarget) 今日 · \(stats.strengthCount)/\(goal.weeklyStrengthTarget) 本周",
+            "恢复 \(stats.recoveryCountToday)/\(goal.dailyRecoveryTarget) 今日 · \(stats.recoveryCount)/\(goal.weeklyRecoveryTarget) 本周",
+            "跑步 \(stats.runCount)/\(goal.weeklyRunTarget) 本周"
+        ].joined(separator: "\n")
     }
 
     @ViewBuilder private func menuBarIcon(met: Bool) -> some View {

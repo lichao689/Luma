@@ -124,25 +124,42 @@ struct MenuBarPopoverView: View {
     }
 
     private var progressRow: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(String(localized: "popover.progress.title", defaultValue: "本周进度"))
-                .font(.caption).foregroundStyle(.secondary)
-            HStack(spacing: 16) {
-                progressPill(String(localized: "goal.strength", defaultValue: "力量"),
-                             stats.strengthCount, goal.weeklyStrengthTarget)
-                progressPill(String(localized: "goal.run", defaultValue: "跑步"),
-                             stats.runCount, goal.weeklyRunTarget)
-                progressPill(String(localized: "goal.recovery", defaultValue: "腰背恢复"),
-                             stats.recoveryCount, goal.weeklyRecoveryTarget)
-            }
+        VStack(alignment: .leading, spacing: 5) {
+            Text(String(localized: "popover.progress.title", defaultValue: "进度"))
+                .font(.caption2).foregroundStyle(.secondary)
+            goalLine(label: "力量",
+                     doneToday: stats.strengthCountToday, targetToday: goal.dailyStrengthTarget,
+                     doneWeek: stats.strengthCount, targetWeek: goal.weeklyStrengthTarget)
+            goalLine(label: "恢复",
+                     doneToday: stats.recoveryCountToday, targetToday: goal.dailyRecoveryTarget,
+                     doneWeek: stats.recoveryCount, targetWeek: goal.weeklyRecoveryTarget)
+            goalLine(label: "跑步",
+                     doneToday: nil, targetToday: nil,
+                     doneWeek: stats.runCount, targetWeek: goal.weeklyRunTarget)
         }
     }
 
-    private func progressPill(_ label: String, _ done: Int, _ target: Int) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.caption2).foregroundStyle(.secondary)
-            Text("\(done)/\(target)").monospacedDigit().font(.callout)
+    /// One goal row: label + optional "今日 x/y" + "本周 x/y".
+    private func goalLine(label: String, doneToday: Int?, targetToday: Int?, doneWeek: Int, targetWeek: Int) -> some View {
+        HStack(spacing: 8) {
+            Text(label).font(.caption).frame(width: 28, alignment: .leading)
+            if let dt = doneToday, let tt = targetToday {
+                countChip("\(dt)/\(tt)", suffix: "日", met: dt >= tt)
+                    .frame(width: 70, alignment: .leading)
+            } else {
+                Spacer().frame(width: 70)
+            }
+            countChip("\(doneWeek)/\(targetWeek)", suffix: "周", met: doneWeek >= targetWeek)
+            Spacer()
         }
+    }
+
+    private func countChip(_ value: String, suffix: String, met: Bool) -> some View {
+        HStack(spacing: 2) {
+            Text(value).monospacedDigit().font(.caption.weight(met ? .semibold : .regular))
+            Text(suffix).font(.caption2).foregroundStyle(.secondary)
+        }
+        .foregroundStyle(met ? Color.green : Color.primary)
     }
 
     private var footer: some View {

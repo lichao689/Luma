@@ -33,15 +33,23 @@ private struct SettingsContent: View {
 
     @ViewBuilder private var goalsTab: some View {
         Form {
+            Section(String(localized: "settings.daily", defaultValue: "每日目标")) {
+                Stepper(value: $values.dailyStrengthTarget, in: 0...3) {
+                    labelRow(String(localized: "goal.strength", defaultValue: "力量"), values.dailyStrengthTarget)
+                }
+                Stepper(value: $values.dailyRecoveryTarget, in: 0...5) {
+                    labelRow(String(localized: "goal.recovery", defaultValue: "恢复"), values.dailyRecoveryTarget)
+                }
+            }
             Section(String(localized: "settings.weekly", defaultValue: "每周目标")) {
-                Stepper(value: $values.weeklyStrengthTarget, in: 0...7) {
+                Stepper(value: $values.weeklyStrengthTarget, in: 0...14) {
                     labelRow(String(localized: "goal.strength", defaultValue: "力量"), values.weeklyStrengthTarget)
+                }
+                Stepper(value: $values.weeklyRecoveryTarget, in: 0...21) {
+                    labelRow(String(localized: "goal.recovery", defaultValue: "恢复"), values.weeklyRecoveryTarget)
                 }
                 Stepper(value: $values.weeklyRunTarget, in: 0...7) {
                     labelRow(String(localized: "goal.run", defaultValue: "跑步"), values.weeklyRunTarget)
-                }
-                Stepper(value: $values.weeklyRecoveryTarget, in: 0...14) {
-                    labelRow(String(localized: "goal.recovery", defaultValue: "腰背恢复"), values.weeklyRecoveryTarget)
                 }
             }
         }
@@ -101,9 +109,11 @@ private struct SettingsContent: View {
 
     private func persist() {
         let goal = store.fetchGoal()
+        goal.dailyStrengthTarget = values.dailyStrengthTarget
         goal.weeklyStrengthTarget = values.weeklyStrengthTarget
-        goal.weeklyRunTarget = values.weeklyRunTarget
+        goal.dailyRecoveryTarget = values.dailyRecoveryTarget
         goal.weeklyRecoveryTarget = values.weeklyRecoveryTarget
+        goal.weeklyRunTarget = values.weeklyRunTarget
         goal.sedentaryReminderMinutes = values.sedentaryReminderMinutes
         goal.enableFlexibleReminder = values.enableFlexibleReminder
         goal.reminderMode = values.reminderMode

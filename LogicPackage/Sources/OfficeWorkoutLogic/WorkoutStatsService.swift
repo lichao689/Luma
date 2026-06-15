@@ -9,9 +9,11 @@ public enum BackPainMarkers {
 /// Immutable snapshot of recent activity. The recommendation engine consumes
 /// this so it stays a pure function with no I/O.
 public struct WorkoutStats: Equatable {
-    public let strengthCount: Int
-    public let runCount: Int
-    public let recoveryCount: Int
+    public let strengthCount: Int        // this week
+    public let runCount: Int             // this week
+    public let recoveryCount: Int        // this week
+    public let strengthCountToday: Int   // today
+    public let recoveryCountToday: Int   // today
     public let lastStrengthType: WorkoutType?
     public let daysSinceLastStrength: Int?
     public let consecutiveInactiveDays: Int
@@ -23,6 +25,8 @@ public struct WorkoutStats: Equatable {
         strengthCount: Int,
         runCount: Int,
         recoveryCount: Int,
+        strengthCountToday: Int,
+        recoveryCountToday: Int,
         lastStrengthType: WorkoutType?,
         daysSinceLastStrength: Int?,
         consecutiveInactiveDays: Int,
@@ -33,6 +37,8 @@ public struct WorkoutStats: Equatable {
         self.strengthCount = strengthCount
         self.runCount = runCount
         self.recoveryCount = recoveryCount
+        self.strengthCountToday = strengthCountToday
+        self.recoveryCountToday = recoveryCountToday
         self.lastStrengthType = lastStrengthType
         self.daysSinceLastStrength = daysSinceLastStrength
         self.consecutiveInactiveDays = consecutiveInactiveDays
@@ -69,6 +75,8 @@ public struct WorkoutStatsService {
 
         let todayStart = calendar.startOfDay(for: now)
         let todays = active.filter { $0.date >= todayStart }
+        let strengthToday = todays.filter { $0.type.countsAsStrength }
+        let recoveryToday = todays.filter { $0.type.countsAsRecovery }
         let consecutiveInactive = consecutiveInactiveDays(active: active)
 
         let recentWindow = calendar.date(byAdding: .day, value: -3, to: now) ?? now
@@ -81,6 +89,8 @@ public struct WorkoutStatsService {
             strengthCount: strengthThisWeek.count,
             runCount: runThisWeek.count,
             recoveryCount: recoveryThisWeek.count,
+            strengthCountToday: strengthToday.count,
+            recoveryCountToday: recoveryToday.count,
             lastStrengthType: lastStrength?.type,
             daysSinceLastStrength: daysSinceLastStrength,
             consecutiveInactiveDays: consecutiveInactive,

@@ -45,8 +45,8 @@ public struct RecommendationEngine {
             return Recommendation(action: .recovery, titleKey: "rec.afterRun.title", reasonKey: "rec.afterRun.reason")
         }
 
-        // 3. Weekly strength already met → run / recovery / rest.
-        if stats.strengthCount >= goal.weeklyStrengthTarget {
+        // 3. Today's strength already met → run / recovery / rest.
+        if stats.strengthCountToday >= goal.dailyStrengthTarget {
             if stats.runCount < goal.weeklyRunTarget {
                 let runShort = goal.weeklyRunTarget - stats.runCount
                 return Recommendation(
@@ -77,7 +77,7 @@ public struct RecommendationEngine {
         default:         plan = .strengthA
         }
 
-        let strengthShort = "\(stats.strengthCount)/\(goal.weeklyStrengthTarget)"
+        let strengthShort = "\(stats.strengthCountToday)/\(goal.dailyStrengthTarget)"
         let planKey = plan == .strengthA ? "A" : "B"
         return Recommendation(
             action: .startStrength(plan),

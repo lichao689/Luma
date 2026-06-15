@@ -11,10 +11,16 @@ public enum ReminderMode: String, Codable, CaseIterable, Identifiable, Sendable 
 
 /// Value-type snapshot of the user's goals + reminder prefs. Decoupled from
 /// SwiftData so the engine and stats stay pure-Swift testable.
+///
+/// Strength & recovery have BOTH a daily and a weekly target (daily drives the
+/// recommendation engine + today's badge; weekly drives the summary rollup).
+/// Run only has a weekly target.
 public struct UserGoalValues: Equatable, Sendable {
+    public var dailyStrengthTarget: Int
     public var weeklyStrengthTarget: Int
-    public var weeklyRunTarget: Int
+    public var dailyRecoveryTarget: Int
     public var weeklyRecoveryTarget: Int
+    public var weeklyRunTarget: Int
     public var sedentaryReminderMinutes: Int
     public var enableFlexibleReminder: Bool
     public var reminderMode: ReminderMode
@@ -23,9 +29,11 @@ public struct UserGoalValues: Equatable, Sendable {
     public var workWeekdays: [Int]
 
     public init(
-        weeklyStrengthTarget: Int = 3,
+        dailyStrengthTarget: Int = 1,
+        weeklyStrengthTarget: Int = 7,
+        dailyRecoveryTarget: Int = 2,
+        weeklyRecoveryTarget: Int = 14,
         weeklyRunTarget: Int = 2,
-        weeklyRecoveryTarget: Int = 5,
         sedentaryReminderMinutes: Int = 60,
         enableFlexibleReminder: Bool = true,
         reminderMode: ReminderMode = .standard,
@@ -33,9 +41,11 @@ public struct UserGoalValues: Equatable, Sendable {
         workEndMinutes: Int = 1110,
         workWeekdays: [Int] = [2, 3, 4, 5, 6]
     ) {
+        self.dailyStrengthTarget = dailyStrengthTarget
         self.weeklyStrengthTarget = weeklyStrengthTarget
-        self.weeklyRunTarget = weeklyRunTarget
+        self.dailyRecoveryTarget = dailyRecoveryTarget
         self.weeklyRecoveryTarget = weeklyRecoveryTarget
+        self.weeklyRunTarget = weeklyRunTarget
         self.sedentaryReminderMinutes = sedentaryReminderMinutes
         self.enableFlexibleReminder = enableFlexibleReminder
         self.reminderMode = reminderMode
