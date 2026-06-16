@@ -59,11 +59,12 @@ struct OfficeWorkoutCoachApp: App {
         .defaultSize(width: 800, height: 560)
     }
 
-    /// Menu-bar badge: icon + three colored progress chips.
+    /// Menu-bar badge: one rendered image containing icon + labeled progress chips.
     ///
-    /// Layout: `💪 0/1 3/7 · 0/2 5/14 · 1/2`
-    /// Each number pair sits in a colored capsule: green when met, red when not.
-    /// Strength/recovery show today/week; run shows week only.
+    /// Layout: `S 0/1 3/7 / R 0/2 5/14 / R 1/2`.
+    /// Each number pair sits in a colored capsule: green when met, soft red when not.
+    /// The badge is rendered into a single non-template image because menu-bar
+    /// labels clip/drop styling when given several SwiftUI subviews directly.
     /// Reading `store.changeToken` creates the SwiftUI dependency that makes
     /// the badge refresh after each log/delete.
     @ViewBuilder private var badgeLabel: some View {
@@ -71,20 +72,13 @@ struct OfficeWorkoutCoachApp: App {
         let _ = badgeClockTick      // refresh day/week rollover while app stays open
         let stats = store.currentStats()
         let goal = UserGoalValues(store.fetchGoal())
+        let title = badgeTitle(stats: stats, goal: goal)
 
-        HStack(spacing: 3) {
-            menuBarIcon(allMet: allGoalsMet(stats: stats, goal: goal))
-            // 力量: today/week
-            chipPair(today: stats.strengthCountToday, todayTarget: goal.dailyStrengthTarget,
-                     week: stats.strengthCount, weekTarget: goal.weeklyStrengthTarget)
-            Text("·").foregroundStyle(.secondary)
-            // 恢复: today/week
-            chipPair(today: stats.recoveryCountToday, todayTarget: goal.dailyRecoveryTarget,
-                     week: stats.recoveryCount, weekTarget: goal.weeklyRecoveryTarget)
-            Text("·").foregroundStyle(.secondary)
-            // 跑步: week only
-            chip(week: stats.runCount, weekTarget: goal.weeklyRunTarget)
-        }
+        Image(nsImage: menuBarBadgeImage(stats: stats, goal: goal))
+            .renderingMode(.original)
+            .interpolation(.high)
+            .accessibilityLabel(Text(title))
+            .help(title)
         .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
             badgeClockTick &+= 1
         }
@@ -97,42 +91,163 @@ struct OfficeWorkoutCoachApp: App {
         stats.runCount >= goal.weeklyRunTarget
     }
 
-    /// One activity with today + week chips, e.g. `0/1 3/7`.
-    @ViewBuilder private func chipPair(today: Int, todayTarget: Int, week: Int, weekTarget: Int) -> some View {
-        chip(value: today, target: todayTarget, met: today >= todayTarget)
-        chip(value: week, target: weekTarget, met: week >= weekTarget)
+    private struct BadgeChip {
+        let text: String
+        let met: Bool
     }
 
-    /// Week-only chip (for run), computing met from week count vs target.
-    @ViewBuilder private func chip(week: Int, weekTarget: Int) -> some View {
-        chip(value: week, target: weekTarget, met: week >= weekTarget)
+    private struct BadgeGroup {
+        let label: String
+        let titleLabel: String
+        let chips: [BadgeChip]
     }
 
-    /// A single colored count chip: green bg when met, red bg when not.
-    @ViewBuilder private func chip(value: Int, target: Int, met: Bool) -> some View {
-        Text("\(value)/\(target)")
-            .monospacedDigit()
-            .font(.system(size: 11, weight: .semibold))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 3)
-            .padding(.vertical, 1)
-            .background(
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(met ? Color.green : Color.red)
+    private func badgeGroups(stats: WorkoutStats, goal: UserGoalValues) -> [BadgeGroup] {
+        [
+            BadgeGroup(
+                label: "S",
+                titleLabel: "力量",
+                chips: [
+                    BadgeChip(text: "\(stats.strengthCountToday)/\(goal.dailyStrengthTarget)",
+                              met: stats.strengthCountToday >= goal.dailyStrengthTarget),
+                    BadgeChip(text: "\(stats.strengthCount)/\(goal.weeklyStrengthTarget)",
+                              met: stats.strengthCount >= goal.weeklyStrengthTarget)
+                ]
+            ),
+            BadgeGroup(
+                label: "R",
+                titleLabel: "恢复",
+                chips: [
+                    BadgeChip(text: "\(stats.recoveryCountToday)/\(goal.dailyRecoveryTarget)",
+                              met: stats.recoveryCountToday >= goal.dailyRecoveryTarget),
+                    BadgeChip(text: "\(stats.recoveryCount)/\(goal.weeklyRecoveryTarget)",
+                              met: stats.recoveryCount >= goal.weeklyRecoveryTarget)
+                ]
+            ),
+            BadgeGroup(
+                label: "R",
+                titleLabel: "跑步",
+                chips: [
+                    BadgeChip(text: "\(stats.runCount)/\(goal.weeklyRunTarget)",
+                              met: stats.runCount >= goal.weeklyRunTarget)
+                ]
             )
+        ]
     }
 
-    @ViewBuilder private func menuBarIcon(allMet: Bool) -> some View {
-        if let image = Self.menuBarTemplateImage {
-            Image(nsImage: image)
-                .renderingMode(.template)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 18, height: 18)
-                .opacity(allMet ? 1.0 : 0.82)
-        } else {
-            Image(systemName: allMet ? "figure.strengthtraining.traditional.fill"
-                                  : "figure.strengthtraining.traditional")
+    private func badgeTitle(stats: WorkoutStats, goal: UserGoalValues) -> String {
+        let groups = badgeGroups(stats: stats, goal: goal)
+        return groups
+            .map { group in "\(group.titleLabel) " + group.chips.map(\.text).joined(separator: " ") }
+            .joined(separator: " / ")
+    }
+
+    private func menuBarBadgeImage(stats: WorkoutStats, goal: UserGoalValues) -> NSImage {
+        let allMet = allGoalsMet(stats: stats, goal: goal)
+        let groups = badgeGroups(stats: stats, goal: goal)
+
+        let height: CGFloat = 22
+        let iconSize: CGFloat = 16
+        let chipHPad: CGFloat = 4
+        let chipVPad: CGFloat = 2
+        let cornerRadius: CGFloat = 4
+        let gap: CGFloat = 4
+        let groupGap: CGFloat = 7
+
+        let labelFont = NSFont.systemFont(ofSize: 11, weight: .semibold)
+        let chipFont = NSFont.monospacedSystemFont(ofSize: 11, weight: .semibold)
+        let textColor = NSColor.white.withAlphaComponent(0.9)
+        let separatorColor = NSColor.white.withAlphaComponent(0.55)
+        let chipTextColor = NSColor.white
+        let unmetChipColor = NSColor(calibratedRed: 0.86, green: 0.42, blue: 0.38, alpha: 0.78)
+        let chipAttrs: [NSAttributedString.Key: Any] = [
+            .font: chipFont,
+            .foregroundColor: chipTextColor
+        ]
+        let labelAttrs: [NSAttributedString.Key: Any] = [
+            .font: labelFont,
+            .foregroundColor: textColor
+        ]
+        let separatorAttrs: [NSAttributedString.Key: Any] = [
+            .font: labelFont,
+            .foregroundColor: separatorColor
+        ]
+
+        func textSize(_ text: String, attrs: [NSAttributedString.Key: Any]) -> NSSize {
+            NSAttributedString(string: text, attributes: attrs).size()
         }
+
+        let slashWidth = textSize("/", attrs: separatorAttrs).width
+        let chipHeight = ceil(textSize("0/0", attrs: chipAttrs).height + chipVPad * 2)
+        var width = iconSize + gap
+
+        for (index, group) in groups.enumerated() {
+            width += ceil(textSize(group.label, attrs: labelAttrs).width) + gap
+            for chip in group.chips {
+                width += ceil(textSize(chip.text, attrs: chipAttrs).width + chipHPad * 2) + gap
+            }
+            if index < groups.count - 1 {
+                width += groupGap + slashWidth + groupGap
+            }
+        }
+
+        let image = NSImage(size: NSSize(width: ceil(width), height: height))
+        image.lockFocus()
+        NSGraphicsContext.current?.imageInterpolation = .high
+        NSColor.clear.setFill()
+        NSRect(origin: .zero, size: image.size).fill()
+
+        var x: CGFloat = 0
+        let iconRect = NSRect(x: x, y: (height - iconSize) / 2, width: iconSize, height: iconSize)
+        drawMenuBarIcon(in: iconRect, allMet: allMet, color: textColor)
+        x += iconSize + gap
+
+        for (index, group) in groups.enumerated() {
+            let label = NSAttributedString(string: group.label, attributes: labelAttrs)
+            let labelSize = label.size()
+            label.draw(at: NSPoint(x: x, y: (height - labelSize.height) / 2))
+            x += ceil(labelSize.width) + gap
+
+            for chip in group.chips {
+                let attributedChip = NSAttributedString(string: chip.text, attributes: chipAttrs)
+                let chipSize = attributedChip.size()
+                let chipWidth = ceil(chipSize.width + chipHPad * 2)
+                let chipRect = NSRect(x: x, y: (height - chipHeight) / 2, width: chipWidth, height: chipHeight)
+                (chip.met ? NSColor.systemGreen : unmetChipColor).setFill()
+                NSBezierPath(roundedRect: chipRect, xRadius: cornerRadius, yRadius: cornerRadius).fill()
+                attributedChip.draw(at: NSPoint(
+                    x: x + chipHPad,
+                    y: chipRect.minY + (chipHeight - chipSize.height) / 2
+                ))
+                x += chipWidth + gap
+            }
+
+            if index < groups.count - 1 {
+                x += groupGap
+                let slash = NSAttributedString(string: "/", attributes: separatorAttrs)
+                let slashSize = slash.size()
+                slash.draw(at: NSPoint(x: x, y: (height - slashSize.height) / 2))
+                x += ceil(slashSize.width) + groupGap
+            }
+        }
+
+        image.unlockFocus()
+        image.isTemplate = false
+        return image
+    }
+
+    private func drawMenuBarIcon(in rect: NSRect, allMet: Bool, color: NSColor) {
+        if let image = Self.menuBarTemplateImage {
+            NSGraphicsContext.saveGraphicsState()
+            color.withAlphaComponent(allMet ? 1.0 : 0.75).setFill()
+            rect.fill()
+            image.draw(in: rect, from: .zero, operation: .destinationIn, fraction: 1)
+            NSGraphicsContext.restoreGraphicsState()
+            return
+        }
+
+        let symbolName = allMet ? "figure.strengthtraining.traditional.fill" : "figure.strengthtraining.traditional"
+        guard let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) else { return }
+        symbol.draw(in: rect, from: .zero, operation: .sourceOver, fraction: allMet ? 1.0 : 0.75)
     }
 }
