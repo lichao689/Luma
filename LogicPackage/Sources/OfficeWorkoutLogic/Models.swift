@@ -22,6 +22,8 @@ public struct UserGoalValues: Equatable, Sendable {
     public var weeklyRecoveryTarget: Int
     public var weeklyRunTarget: Int
     public var sedentaryReminderMinutes: Int
+    /// 两次久坐提醒之间至少间隔多少分钟(旧版是硬编码 45)。
+    public var sedentaryCooldownMinutes: Int
     public var enableFlexibleReminder: Bool
     public var reminderMode: ReminderMode
     public var workStartMinutes: Int
@@ -35,6 +37,7 @@ public struct UserGoalValues: Equatable, Sendable {
         weeklyRecoveryTarget: Int = 14,
         weeklyRunTarget: Int = 2,
         sedentaryReminderMinutes: Int = 60,
+        sedentaryCooldownMinutes: Int = 45,
         enableFlexibleReminder: Bool = true,
         reminderMode: ReminderMode = .standard,
         workStartMinutes: Int = 570,
@@ -47,6 +50,7 @@ public struct UserGoalValues: Equatable, Sendable {
         self.weeklyRecoveryTarget = weeklyRecoveryTarget
         self.weeklyRunTarget = weeklyRunTarget
         self.sedentaryReminderMinutes = sedentaryReminderMinutes
+        self.sedentaryCooldownMinutes = sedentaryCooldownMinutes
         self.enableFlexibleReminder = enableFlexibleReminder
         self.reminderMode = reminderMode
         self.workStartMinutes = workStartMinutes

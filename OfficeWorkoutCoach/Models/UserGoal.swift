@@ -17,6 +17,8 @@ final class UserGoal {
     var weeklyRecoveryTarget: Int
     var weeklyRunTarget: Int
     var sedentaryReminderMinutes: Int
+    /// 带默认值,老数据迁移时能自动补上。
+    var sedentaryCooldownMinutes: Int = 45
     var enableFlexibleReminder: Bool
     var reminderModeRaw: String
     var workStartMinutes: Int
@@ -31,6 +33,7 @@ final class UserGoal {
         weeklyRecoveryTarget: Int = 14,
         weeklyRunTarget: Int = 2,
         sedentaryReminderMinutes: Int = 60,
+        sedentaryCooldownMinutes: Int = 45,
         enableFlexibleReminder: Bool = true,
         reminderMode: ReminderMode = .standard,
         workStartMinutes: Int = 570,
@@ -44,6 +47,7 @@ final class UserGoal {
         self.weeklyRecoveryTarget = weeklyRecoveryTarget
         self.weeklyRunTarget = weeklyRunTarget
         self.sedentaryReminderMinutes = sedentaryReminderMinutes
+        self.sedentaryCooldownMinutes = sedentaryCooldownMinutes
         self.enableFlexibleReminder = enableFlexibleReminder
         self.reminderModeRaw = reminderMode.rawValue
         self.workStartMinutes = workStartMinutes
@@ -66,6 +70,7 @@ extension UserGoalValues {
             weeklyRecoveryTarget: goal.weeklyRecoveryTarget,
             weeklyRunTarget: goal.weeklyRunTarget,
             sedentaryReminderMinutes: goal.sedentaryReminderMinutes,
+            sedentaryCooldownMinutes: goal.sedentaryCooldownMinutes,
             enableFlexibleReminder: goal.enableFlexibleReminder,
             reminderMode: goal.reminderMode,
             workStartMinutes: goal.workStartMinutes,

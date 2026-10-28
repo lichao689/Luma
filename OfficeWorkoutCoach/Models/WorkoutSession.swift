@@ -52,7 +52,8 @@ final class WorkoutSession {
     }
 
     /// Bridge into the logic layer's value type.
+    /// `note` 必须一起带过去 —— 腰痛识别会扫描备注文本。
     var asRecord: SessionRecord {
-        SessionRecord(id: id, date: date, type: type, bodyFeeling: bodyFeeling)
+        SessionRecord(id: id, date: date, type: type, bodyFeeling: bodyFeeling, note: notes)
     }
 }

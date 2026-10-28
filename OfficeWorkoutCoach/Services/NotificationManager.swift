@@ -14,12 +14,12 @@ import OfficeWorkoutLogic
 /// Only the transport changed from launchd/AppleScript to native AppKit.
 @MainActor
 final class NotificationManager: NSObject, ObservableObject {
-    static let shared = NotificationManager()
 
     /// Deep-link request set when the user taps a notification action.
     /// The popover observes this, navigates accordingly, then resets it.
     enum DeepLink: Equatable {
-        case startMinimal   // "开始 8 分钟" → minimal quick-log page
+        case startMinimal     // "开始 8 分钟" → minimal quick-log page
+        case startRecovery    // 久坐提醒 → 腰背恢复跟练
     }
     @Published var pendingDeepLink: DeepLink?
 
@@ -36,11 +36,14 @@ final class NotificationManager: NSObject, ObservableObject {
         "Keynote", "Microsoft PowerPoint"
     ]
 
+    // UserDefaults keys: 只保留"最后一次"的标记,不再按日期/周次无限新增。
+    static let lastFlexibleDayKey = "flex.lastFiredDay"
+    static let lastWeeklyWeekKey = "weekly.lastFiredWeek"
+
     // Escalation thresholds (seconds). Match the shell script's constants.
     private let restThreshold: TimeInterval = 600           // 10 min idle = real break
     private let voiceEscalationAfter: TimeInterval = 120    // 2 min → speak
     private let dialogEscalationAfter: TimeInterval = 600   // 10 min → modal
-    private let cooldown: TimeInterval = 2700               // 45 min between alerts
 
     // Mutable reminder state (persisted across ticks within a run).
     private var activeSince: Date?
@@ -51,9 +54,14 @@ final class NotificationManager: NSObject, ObservableObject {
     /// Latest goal snapshot, used for re-evaluating on settings change.
     private var currentGoal: UserGoalValues = .default
 
-    /// Public shared instance; injected into the environment as well.
-    /// Accessed only from the main actor (the class is `@MainActor`-isolated).
-    static let sharedInstance = NotificationManager()
+    /// 跟练进行中时置 true,久坐提醒会跳过 —— 否则练到一半被弹窗打断。
+    /// 由 `WorkoutStartView` 在开始/结束时设置。
+    var isWorkoutInProgress = false
+
+    /// 唯一的共享实例。注入环境、通知回调、设置页刷新都走这一个 ——
+    /// 之前这里同时存在 `shared` 和 `sharedInstance` 两个实例,导致通知
+    /// 回调把深链写进了另一个对象,点「开始 8 分钟」没有反应。
+    static let shared = NotificationManager()
 
     override init() {
         super.init()
@@ -132,11 +140,11 @@ final class NotificationManager: NSObject, ObservableObject {
     private func evaluateFlexible(stats: WorkoutStats, goal: UserGoalValues, now: Date) {
         guard goal.reminderMode != .light else { return }
         guard !stats.hasActivityToday, withinWorkWindow(goal: goal, now: now) else { return }
-        // Fire once per day: gate on a UserDefaults flag.
-        let key = "flex.lastFired.\(dayKey(now))"
-        guard UserDefaults.standard.object(forKey: key) == nil else { return }
+        // 只存"最后一次触发的日期",不再每天新建一个 key(旧写法一年会攒 365 个)。
+        let today = dayKey(now)
+        guard UserDefaults.standard.string(forKey: Self.lastFlexibleDayKey) != today else { return }
         fireFlexible(now: now)
-        UserDefaults.standard.set(now.timeIntervalSince1970, forKey: key)
+        UserDefaults.standard.set(today, forKey: Self.lastFlexibleDayKey)
     }
 
     // MARK: - Weekly goal (Fri/Sat nudge if strength still short)
@@ -146,15 +154,20 @@ final class NotificationManager: NSObject, ObservableObject {
         let weekday = Calendar.current.component(.weekday, from: now)
         guard weekday == 6 || weekday == 7 else { return } // Fri(6)/Sat(7)
         guard stats.strengthCount < goal.weeklyStrengthTarget else { return }
-        let key = "weekly.lastFired.\(weekKey(now))"
-        guard UserDefaults.standard.object(forKey: key) == nil else { return }
+        let thisWeek = weekKey(now)
+        guard UserDefaults.standard.string(forKey: Self.lastWeeklyWeekKey) != thisWeek else { return }
         fireWeekly(short: goal.weeklyStrengthTarget - stats.strengthCount, now: now)
-        UserDefaults.standard.set(now.timeIntervalSince1970, forKey: key)
+        UserDefaults.standard.set(thisWeek, forKey: Self.lastWeeklyWeekKey)
     }
 
     // MARK: - Sedentary escalation (ported from shell)
 
     private func evaluateSedentary(goal: UserGoalValues, now: Date) {
+        // 跟练进行中不打断;顺手把久坐计时归零,练完重新累计。
+        guard !isWorkoutInProgress else {
+            activeSince = nil
+            return
+        }
         guard withinWorkWindow(goal: goal, now: now) else {
             activeSince = nil
             return
@@ -178,6 +191,7 @@ final class NotificationManager: NSObject, ObservableObject {
         let activeDuration = now.timeIntervalSince(activeSince)
         let threshold = TimeInterval(goal.sedentaryReminderMinutes * 60)
         guard activeDuration >= threshold else { return }
+        let cooldown = TimeInterval(goal.sedentaryCooldownMinutes * 60)
         if let last = lastAlertAt, now.timeIntervalSince(last) < cooldown { return }
 
         // Stage 1: notification.
@@ -306,9 +320,17 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         // Reveal the app when the user taps a notification action, and
         // request a deep-link navigation for the START action.
         let isStart = response.actionIdentifier == "START"
+        let category = response.notification.request.content.categoryIdentifier
         Task { @MainActor in
             NSApplication.shared.activate(ignoringOtherApps: true)
-            if isStart { NotificationManager.shared.pendingDeepLink = .startMinimal }
+            if isStart {
+                // 久坐提醒说的是"做一组腰背恢复",就该跳到腰背恢复;
+                // 柔性提醒才是"8 分钟最低版"。之前一律跳最低版,语义对不上。
+                let link: NotificationManager.DeepLink =
+                    category == NotificationManager.Category.sedentary.rawValue
+                    ? .startRecovery : .startMinimal
+                NotificationManager.shared.pendingDeepLink = link
+            }
         }
         completionHandler()
     }
