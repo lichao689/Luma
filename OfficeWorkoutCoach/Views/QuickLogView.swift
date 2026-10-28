@@ -8,8 +8,9 @@ import OfficeWorkoutLogic
 /// surface the full completion/intensity/feeling form.
 struct QuickLogView: View {
     let type: WorkoutType
-    /// Called when the user is done (save OR cancel) → returns to home page.
-    var onDone: () -> Void
+    /// Called when the user is done. `true` = 真的保存了,父视图据此给反馈;
+    /// `false` = 取消。
+    var onDone: (Bool) -> Void
 
     @EnvironmentObject private var store: WorkoutStore
 
@@ -32,7 +33,6 @@ struct QuickLogView: View {
                 .padding(.top, 4)
         }
         .padding(12)
-        .frame(width: 300)
         .controlSize(.small)
         .onAppear { configureDefaults() }
     }
@@ -41,7 +41,7 @@ struct QuickLogView: View {
     private var navBar: some View {
         HStack(spacing: 6) {
             Button {
-                onDone()
+                onDone(false)
             } label: {
                 Image(systemName: "chevron.left")
             }
@@ -76,7 +76,7 @@ struct QuickLogView: View {
     private var actionBar: some View {
         HStack(spacing: 8) {
             Button {
-                onDone()
+                onDone(false)
             } label: {
                 Text(String(localized: "quicklog.cancel", defaultValue: "取消"))
                     .frame(maxWidth: .infinity)
@@ -123,7 +123,7 @@ struct QuickLogView: View {
             bodyFeeling: needsDetails ? bodyFeeling.rawValue : nil,
             notes: notes.isEmpty ? nil : notes
         )
-        onDone()
+        onDone(true)
     }
 }
 

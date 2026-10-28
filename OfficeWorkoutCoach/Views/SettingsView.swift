@@ -1,5 +1,7 @@
 import SwiftUI
 import SwiftData
+import AppKit
+import UniformTypeIdentifiers
 import OfficeWorkoutLogic
 
 /// Tabbed settings: weekly goals, reminders, and work window.
@@ -25,8 +27,9 @@ private struct SettingsContent: View {
             goalsTab.tabItem { Label(String(localized: "settings.goals", defaultValue: "目标"), systemImage: "target") }
             remindersTab.tabItem { Label(String(localized: "settings.reminders", defaultValue: "提醒"), systemImage: "bell") }
             windowTab.tabItem { Label(String(localized: "settings.window", defaultValue: "时间窗"), systemImage: "clock") }
+            dataTab.tabItem { Label(String(localized: "settings.data", defaultValue: "数据"), systemImage: "externaldrive") }
         }
-        .frame(width: 420, height: 340)
+        .frame(width: 440, height: 380)
         .onAppear { if !loaded { values = UserGoalValues(store.fetchGoal()); loaded = true } }
     }
 
@@ -72,6 +75,12 @@ private struct SettingsContent: View {
                     Text(String(localized: "settings.min90", defaultValue: "90 分钟")).tag(90)
                     Text(String(localized: "settings.off", defaultValue: "关闭")).tag(0)
                 }
+                Picker(String(localized: "settings.cooldown", defaultValue: "两次提醒至少间隔"), selection: $values.sedentaryCooldownMinutes) {
+                    Text(String(localized: "settings.cooldown.30", defaultValue: "30 分钟")).tag(30)
+                    Text(String(localized: "settings.cooldown.45", defaultValue: "45 分钟")).tag(45)
+                    Text(String(localized: "settings.cooldown.60", defaultValue: "60 分钟")).tag(60)
+                    Text(String(localized: "settings.cooldown.90", defaultValue: "90 分钟")).tag(90)
+                }
             } header: {
                 Text(String(localized: "settings.sedentary", defaultValue: "久坐提醒"))
             } footer: {
@@ -104,12 +113,48 @@ private struct SettingsContent: View {
         .onChange(of: values) { persist() }
     }
 
+    @ViewBuilder private var dataTab: some View {
+        Form {
+            Section {
+                Button {
+                    exportCSV()
+                } label: {
+                    Label(String(localized: "settings.export", defaultValue: "导出为 CSV…"),
+                          systemImage: "square.and.arrow.up")
+                }
+                Text(String(localized: "settings.export.hint",
+                            defaultValue: "导出全部训练记录,包含每组的次数与重量,可直接用 Excel 或 Numbers 打开。"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } header: {
+                Text(String(localized: "settings.data", defaultValue: "数据"))
+            } footer: {
+                Text(String(localized: "settings.export.footer",
+                            defaultValue: "数据只存在本机,重装系统或换机前记得先导出一份。"))
+                    .font(.caption)
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    /// 导出 CSV。菜单栏 App 要先 activate,保存面板才会到前台。
+    private func exportCSV() {
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        let panel = NSSavePanel()
+        let stamp = DateFormatter()
+        stamp.dateFormat = "yyyyMMdd-HHmm"
+        panel.nameFieldStringValue = "luma-\(stamp.string(from: .now)).csv"
+        panel.allowedContentTypes = [.commaSeparatedText]
+        panel.canCreateDirectories = true
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        try? store.exportCSV().write(to: url, atomically: true, encoding: .utf8)
+    }
+
     // MARK: - Persistence
 
-    private func persist() {
-        guard loaded else { return }
+    private func persist() {        guard loaded else { return }
         store.updateGoal(values)
-        NotificationManager.sharedInstance.refresh(from: values)
+        NotificationManager.shared.refresh(from: values)
     }
 
     // MARK: - Helpers
