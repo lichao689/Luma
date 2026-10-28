@@ -29,7 +29,7 @@ struct SummaryView: View {
             recentList
         }
         .padding(12)
-        .frame(width: 320, height: 460)
+        .frame(width: 320, height: 460, alignment: .topLeading)
         .controlSize(.small)
         .onAppear { sessions = store.fetchAllSessions() }
     }
