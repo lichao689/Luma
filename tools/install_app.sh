@@ -5,6 +5,9 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CONFIG="${CONFIG:-Release}"
 DEST_DIR="${DEST_DIR:-$HOME/Applications}"
 APP_NAME="luma.app"
+# 额外的 xcodebuild 参数,默认空。用于在受限环境里补开关,例如:
+#   EXTRA_XCODEBUILD_ARGS='OTHER_SWIFT_FLAGS="-disable-sandbox"' tools/install_app.sh
+EXTRA_XCODEBUILD_ARGS="${EXTRA_XCODEBUILD_ARGS:-}"
 
 cd "$ROOT_DIR"
 
@@ -12,6 +15,7 @@ xcodebuild -project OfficeWorkoutCoach.xcodeproj \
   -scheme OfficeWorkoutCoach \
   -configuration "$CONFIG" \
   -destination 'platform=macOS' \
+  ${EXTRA_XCODEBUILD_ARGS} \
   build
 
 BUILD_DIR="$(xcodebuild -project OfficeWorkoutCoach.xcodeproj \

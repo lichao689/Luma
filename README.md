@@ -73,6 +73,11 @@ swift test --package-path LogicPackage
 > 若测试报 `sandbox-exec: sandbox_apply: Operation not permitted`(较新的 macOS 上
 > SwiftPM 编译 manifest 时会遇到),加 `--disable-sandbox` 即可:
 > `swift test --package-path LogicPackage --disable-sandbox`
+>
+> 同理,在受限沙箱环境(某些 IDE 内置终端)里 `xcodebuild` 可能报
+> `swift-plugin-server ... produced malformed response` —— 这是 Swift 编译器给宏插件
+> 套的 `sandbox-exec` 跑不起来导致的,与代码无关。给编译器关掉沙箱即可:
+> `EXTRA_XCODEBUILD_ARGS='OTHER_SWIFT_FLAGS="-disable-sandbox"' tools/install_app.sh`
 
 或在 Xcode 中双击 `OfficeWorkoutCoach.xcodeproj`,⌘R 运行。
 
