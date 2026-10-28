@@ -35,6 +35,9 @@ mkdir -p "$DEST_DIR"
 rm -rf "$DEST_DIR/OfficeWorkoutCoach.app"
 rm -rf "$DEST_APP"
 ditto "$SOURCE_APP" "$DEST_APP"
-open "$DEST_APP"
+if ! open -n "$DEST_APP"; then
+  echo "Installed, but macOS did not open the app automatically: $DEST_APP" >&2
+  exit 0
+fi
 
 echo "Installed and opened: $DEST_APP"
