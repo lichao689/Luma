@@ -29,7 +29,7 @@ struct OfficeWorkoutCoachApp: App {
     var body: some Scene {
         // The menu-bar entry is the app's primary surface.
         MenuBarExtra {
-            MenuBarPopoverView()
+            MenuBarPopoverView(onQuit: quitApp)
                 .environmentObject(store)
                 .environmentObject(notifier)
                 .modelContainer(store.container)
@@ -46,6 +46,14 @@ struct OfficeWorkoutCoachApp: App {
             badgeLabel
         }
         .menuBarExtraStyle(.window)
+        .commands {
+            CommandGroup(replacing: .appTermination) {
+                Button(String(localized: "command.quit", defaultValue: "退出小盏")) {
+                    quitApp()
+                }
+                .keyboardShortcut("q", modifiers: .command)
+            }
+        }
 
         SettingsView()
             .environmentObject(store)
@@ -57,6 +65,14 @@ struct OfficeWorkoutCoachApp: App {
             ExerciseGuideView(preselected: nil)
         }
         .defaultSize(width: 800, height: 560)
+    }
+
+    @MainActor
+    private func quitApp() {
+        AppQuitAction(
+            stopMonitoring: { notifier.stopMonitoring() },
+            terminate: { NSApplication.shared.terminate(nil) }
+        )()
     }
 
     /// Menu-bar badge: one rendered image containing icon + labeled progress chips.

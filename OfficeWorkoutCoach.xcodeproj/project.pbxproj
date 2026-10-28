@@ -26,6 +26,9 @@
 		AA000061 /* AppMenuBarIconTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = AB000061; };
 		AA000034 /* Exercises in Resources */ = {isa = PBXBuildFile; fileRef = AB000034; };
 		AA000050 /* OfficeWorkoutLogic in Frameworks */ = {isa = PBXBuildFile; productRef = AF600002 /* OfficeWorkoutLogic */; };
+		AA100001 /* AppQuitAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100001 /* AppQuitAction.swift */; };
+		AA100002 /* AppQuitActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100002 /* AppQuitActionTests.swift */; };
+		AA100003 /* AppQuitAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100001 /* AppQuitAction.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,7 +52,10 @@
 		AB000032 /* en Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
 		AB000036 /* en InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
 		AB100000 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		AB100001 /* AppQuitAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppQuitAction.swift; sourceTree = "<group>"; };
+		AB100002 /* AppQuitActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppQuitActionTests.swift; sourceTree = "<group>"; };
 		AB200000 /* luma.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = luma.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB200001 /* OfficeWorkoutCoachTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OfficeWorkoutCoachTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +67,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AC100001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -68,6 +81,7 @@
 			isa = PBXGroup;
 			children = (
 				AD000100 /* OfficeWorkoutCoach */,
+				AD100000 /* OfficeWorkoutCoachTests */,
 				AB100000 /* Shared.xcconfig */,
 				AD000900 /* Products */,
 			);
@@ -77,8 +91,17 @@
 			isa = PBXGroup;
 			children = (
 				AB200000 /* luma.app */,
+				AB200001 /* OfficeWorkoutCoachTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AD100000 /* OfficeWorkoutCoachTests */ = {
+			isa = PBXGroup;
+			children = (
+				AB100002 /* AppQuitActionTests.swift */,
+			);
+			path = OfficeWorkoutCoachTests;
 			sourceTree = "<group>";
 		};
 		AD000100 /* OfficeWorkoutCoach */ = {
@@ -117,6 +140,7 @@
 		AD000120 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				AB100001 /* AppQuitAction.swift */,
 				AB000020 /* WorkoutRepository.swift */,
 				AB000023 /* NotificationManager.swift */,
 				AB000024 /* UILocalization.swift */,
@@ -178,6 +202,24 @@
 			productReference = AB200000 /* luma.app */;
 			productType = "com.apple.product-type.application";
 		};
+		AE100000 /* OfficeWorkoutCoachTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AF100003 /* Build configuration list for OfficeWorkoutCoachTests */;
+			buildPhases = (
+				AC100002 /* Sources */,
+				AC100001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OfficeWorkoutCoachTests;
+			packageProductDependencies = (
+			);
+			productName = OfficeWorkoutCoachTests;
+			productReference = AB200001 /* OfficeWorkoutCoachTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -206,6 +248,7 @@
 			projectRoot = "";
 			targets = (
 				AE000000 /* OfficeWorkoutCoach */,
+				AE100000 /* OfficeWorkoutCoachTests */,
 			);
 		};
 /* End PBXProject section */
@@ -240,9 +283,19 @@
 				AA000012 /* SummaryView.swift in Sources */,
 				AA000013 /* SettingsView.swift in Sources */,
 				AA000014 /* ExerciseGuideView.swift in Sources */,
+				AA100001 /* AppQuitAction.swift in Sources */,
 				AA000020 /* WorkoutRepository.swift in Sources */,
 				AA000023 /* NotificationManager.swift in Sources */,
 				AA000024 /* UILocalization.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AC100002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA100003 /* AppQuitAction.swift in Sources */,
+				AA100002 /* AppQuitActionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,6 +380,40 @@
 			};
 			name = Release;
 		};
+		B1001001 /* Debug (tests) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.lucerna.workoutcoach.tests";
+				PRODUCT_NAME = OfficeWorkoutCoachTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		B1001002 /* Release (tests) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.lucerna.workoutcoach.tests";
+				PRODUCT_NAME = OfficeWorkoutCoachTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -344,6 +431,15 @@
 			buildConfigurations = (
 				B0001001 /* Debug */,
 				B0001002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AF100003 /* Build configuration list for OfficeWorkoutCoachTests */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B1001001 /* Debug */,
+				B1001002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

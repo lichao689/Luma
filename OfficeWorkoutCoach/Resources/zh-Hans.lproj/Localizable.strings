@@ -35,6 +35,8 @@
 "popover.progress.title" = "本周进度";
 "popover.records" = "查看记录";
 "popover.settings" = "设置";
+"popover.quit" = "退出小盏";
+"command.quit" = "退出小盏";
 "popover.cta.start" = "开始";
 "popover.cta.run" = "跑步已完成";
 "popover.cta.recovery" = "做腰背恢复";
@@ -124,6 +126,12 @@
 "guide.section.mistakes" = "常见错误";
 "guide.section.stop" = "不适时停止";
 "guide.section.targets" = "主要练:";
+"guide.section.prescription" = "本次处方";
+"guide.prescription.dose" = "处方";
+"guide.prescription.tempo" = "节奏";
+"guide.prescription.rest" = "休息";
+"guide.prescription.estimate" = "预计";
+"guide.prescription.focus" = "重点";
 
 // Muscle groups
 "muscle.legs" = "腿";

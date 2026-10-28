@@ -1,9 +1,12 @@
 import SwiftUI
 import SwiftData
+import AppKit
 import OfficeWorkoutLogic
 
 /// The window that appears when the menu-bar icon is clicked.
 struct MenuBarPopoverView: View {
+    var onQuit: @MainActor () -> Void
+
     @EnvironmentObject private var store: WorkoutStore
     @EnvironmentObject private var notifier: NotificationManager
     @Environment(\.openSettings) private var openSettings
@@ -191,6 +194,15 @@ struct MenuBarPopoverView: View {
             }
             .buttonStyle(.borderless)
             .help(String(localized: "popover.settings", defaultValue: "设置"))
+
+            Button {
+                onQuit()
+            } label: {
+                Image(systemName: "power")
+            }
+            .buttonStyle(.borderless)
+            .help(String(localized: "popover.quit", defaultValue: "退出小盏"))
+            .accessibilityLabel(String(localized: "popover.quit", defaultValue: "退出小盏"))
         }
     }
 

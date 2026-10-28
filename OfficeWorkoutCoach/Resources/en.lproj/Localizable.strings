@@ -35,6 +35,8 @@
 "popover.progress.title" = "This week";
 "popover.records" = "Records";
 "popover.settings" = "Settings";
+"popover.quit" = "Quit luma";
+"command.quit" = "Quit luma";
 "popover.cta.start" = "Start";
 "popover.cta.run" = "Mark run done";
 "popover.cta.recovery" = "Back recovery";
@@ -124,6 +126,12 @@
 "guide.section.mistakes" = "Common mistakes";
 "guide.section.stop" = "Stop if";
 "guide.section.targets" = "Main target:";
+"guide.section.prescription" = "This session";
+"guide.prescription.dose" = "Dose";
+"guide.prescription.tempo" = "Tempo";
+"guide.prescription.rest" = "Rest";
+"guide.prescription.estimate" = "Est. time";
+"guide.prescription.focus" = "Focus";
 
 // Muscle groups
 "muscle.legs" = "Legs";
