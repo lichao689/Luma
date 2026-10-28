@@ -263,3 +263,90 @@
 "ex.hipFlexorStretch.easier" = "Pad the knee; use a standing lunge stretch; hold for less time.";
 "ex.hipFlexorStretch.stop" = "Knee pressure pain; low-back compression; numbness or tingling.";
 "settings.daily" = "Daily goals";
+
+// Workout session
+"workout.progress" = "Set %1$d of %2$d";
+"workout.dose.reps" = "%1$d × %2$@ reps";
+"workout.dose.hold" = "%1$d × %2$@ s";
+"workout.done.detail" = "%1$d sets · %2$d min — logged to today.";
+"workout.done.title" = "Workout complete";
+"workout.done.close" = "Done";
+"workout.close" = "End workout";
+"workout.quit.title" = "End this workout?";
+"workout.quit.confirm" = "End and discard";
+"workout.quit.cancel" = "Keep going";
+"workout.quit.message" = "Completed sets will not be logged.";
+"workout.side.left" = "Left";
+"workout.side.right" = "Right";
+"workout.ready" = "Ready when you are";
+"workout.working" = "In progress";
+"workout.holding" = "Hold";
+"workout.resting" = "Rest";
+"workout.lastTime" = "Last";
+"workout.unit.reps" = "reps";
+"workout.unit.seconds" = "s";
+"workout.weight" = "Weight";
+"workout.weight.placeholder" = "kg (optional)";
+"workout.weight.hint" = "Leave blank to log reps only";
+"workout.startSet" = "Start set";
+"workout.finishSet" = "Finish set";
+"workout.skipRest" = "Skip rest";
+"workout.addRest" = "+30 s";
+
+// Tempo
+"prescription.tempo.default" = "Slow and controlled throughout";
+"prescription.tempo.gobletSquat" = "Down ~2s, up ~1s";
+"prescription.tempo.pushUp" = "Down ~2s, push ~1s";
+"prescription.tempo.shoulderPress" = "Press ~1s, lower ~2s";
+"prescription.tempo.gluteBridge" = "Up 1s, pause 1s, lower 2s";
+"prescription.tempo.plank" = "Hold steady, breathe";
+"prescription.tempo.romanianDeadlift" = "Lower 2-3s, lift ~1s";
+"prescription.tempo.bentOverDumbbellRow" = "Pull 1s, pause 1s, lower 2s";
+"prescription.tempo.reverseLunge" = "Down ~2s, stand ~1s";
+"prescription.tempo.proneWRaise" = "Lift 1s, pause 1s, lower 2s";
+"prescription.tempo.sidePlank" = "Hold steady, breathe";
+"prescription.tempo.catCow" = "Inhale to sink, exhale to round, 8-10s each";
+"prescription.tempo.pelvicTilt" = "Exhale to tilt, hold 1-2s, release";
+"prescription.tempo.deadBug" = "Extend ~3s, return ~2s";
+"prescription.tempo.birdDog" = "Extend 2s, pause 1s, return slowly";
+"prescription.tempo.hipFlexorStretch" = "Hold steady, breathe";
+
+// Prescription display
+"guide.prescription.doseReps" = "%1$d × %2$@ reps%3$@";
+"guide.prescription.doseHold" = "%1$d × %2$@ s%3$@";
+"guide.prescription.perSide" = " per side";
+"guide.prescription.noRest" = "No formal rest";
+"guide.prescription.restSeconds" = "%1$d s";
+"guide.prescription.estimateMinutes" = "~%1$d min";
+"guide.prescription.tempoFallback" = "Slow and controlled throughout";
+"guide.prescription.focusFallback" = "Stable, no pain";
+"guide.prescription.intentStrength" = "Keep the form: the last 2 reps can be hard, but never painful or out of control.";
+"guide.prescription.intentRecovery" = "Comfort and control first — stop if pain rises or you feel numbness or radiating discomfort.";
+"guide.startPlan" = "Start %1$@";
+
+// Popover and badge
+"badge.accessibility" = "%1$d of %2$d goals met today; %3$d strength and %4$d runs this week";
+"popover.minutes" = "~%1$d min";
+"popover.weekSummary" = "Week: %1$d strength · %2$d recovery · %3$d runs";
+"popover.manual" = "Log manually (after the fact)";
+"popover.cta.begin" = "Start";
+"goal.strength.short" = "Strength";
+"goal.recovery.short" = "Recovery";
+"goal.run.short" = "Run";
+
+// Rest suggestion
+"rec.rest.title" = "Time to rest";
+"rec.rest.reason" = "%1$@ days in a row, and every weekly goal is met. Recovery is part of training.";
+
+// Settings
+"settings.cooldown" = "Minimum gap between reminders";
+"settings.cooldown.30" = "30 min";
+"settings.cooldown.45" = "45 min";
+"settings.cooldown.60" = "60 min";
+"settings.cooldown.90" = "90 min";
+
+// Data export
+"settings.data" = "Data";
+"settings.export" = "Export as CSV…";
+"settings.export.hint" = "Exports every session with per-set reps and weight. Opens in Excel or Numbers.";
+"settings.export.footer" = "Data lives only on this Mac — export a copy before reinstalling or switching machines.";

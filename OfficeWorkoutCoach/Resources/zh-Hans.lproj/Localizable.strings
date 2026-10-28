@@ -263,3 +263,90 @@
 "ex.hipFlexorStretch.easier" = "膝盖下垫毛巾;站姿弓步拉伸;缩短保持时间。";
 "ex.hipFlexorStretch.stop" = "膝盖压痛;腰椎挤压感;腿部麻木或刺痛。";
 "settings.daily" = "每日目标";
+
+// 跟练模式
+"workout.progress" = "第 %1$d / %2$d 组";
+"workout.dose.reps" = "%1$d 组 × %2$@ 次";
+"workout.dose.hold" = "%1$d 组 × %2$@ 秒";
+"workout.done.detail" = "共 %1$d 组 · %2$d 分钟,已记入今天。";
+"workout.done.title" = "训练完成";
+"workout.done.close" = "完成";
+"workout.close" = "结束训练";
+"workout.quit.title" = "结束这次训练?";
+"workout.quit.confirm" = "结束并放弃";
+"workout.quit.cancel" = "继续练";
+"workout.quit.message" = "已完成的组不会被记录。";
+"workout.side.left" = "左侧";
+"workout.side.right" = "右侧";
+"workout.ready" = "准备好了就开始";
+"workout.working" = "进行中";
+"workout.holding" = "保持";
+"workout.resting" = "组间休息";
+"workout.lastTime" = "上次";
+"workout.unit.reps" = "次";
+"workout.unit.seconds" = "秒";
+"workout.weight" = "重量";
+"workout.weight.placeholder" = "kg(可留空)";
+"workout.weight.hint" = "留空表示只记次数";
+"workout.startSet" = "开始本组";
+"workout.finishSet" = "完成本组";
+"workout.skipRest" = "跳过休息";
+"workout.addRest" = "+30 秒";
+
+// 节奏
+"prescription.tempo.default" = "慢做,全程可控";
+"prescription.tempo.gobletSquat" = "下蹲约 2 秒,起身约 1 秒";
+"prescription.tempo.pushUp" = "下落约 2 秒,推起约 1 秒";
+"prescription.tempo.shoulderPress" = "上推约 1 秒,下放约 2 秒";
+"prescription.tempo.gluteBridge" = "上顶 1 秒,顶峰停 1 秒,下放 2 秒";
+"prescription.tempo.plank" = "稳定保持,自然呼吸";
+"prescription.tempo.romanianDeadlift" = "下放 2-3 秒,起身约 1 秒";
+"prescription.tempo.bentOverDumbbellRow" = "拉起 1 秒,顶峰停 1 秒,下放 2 秒";
+"prescription.tempo.reverseLunge" = "下蹲约 2 秒,站起约 1 秒";
+"prescription.tempo.proneWRaise" = "抬起 1 秒,停 1 秒,下放 2 秒";
+"prescription.tempo.sidePlank" = "稳定保持,自然呼吸";
+"prescription.tempo.catCow" = "吸气下沉,呼气圆背,每次 8-10 秒";
+"prescription.tempo.pelvicTilt" = "呼气后倾,停 1-2 秒,放松回中立";
+"prescription.tempo.deadBug" = "慢伸约 3 秒,慢收约 2 秒";
+"prescription.tempo.birdDog" = "伸出 2 秒,停 1 秒,慢慢收回";
+"prescription.tempo.hipFlexorStretch" = "稳定保持,自然呼吸";
+
+// 处方展示
+"guide.prescription.doseReps" = "%1$d 组 × %2$@ 次%3$@";
+"guide.prescription.doseHold" = "%1$d 组 × %2$@ 秒%3$@";
+"guide.prescription.perSide" = "/侧";
+"guide.prescription.noRest" = "无需正式休息";
+"guide.prescription.restSeconds" = "%1$d 秒";
+"guide.prescription.estimateMinutes" = "约 %1$d 分钟";
+"guide.prescription.tempoFallback" = "慢做,全程可控";
+"guide.prescription.focusFallback" = "动作稳定、没有疼痛";
+"guide.prescription.intentStrength" = "力量训练以动作不变形为准:最后 2 次可以吃力,但不要做到疼痛或失控。";
+"guide.prescription.intentRecovery" = "腰背恢复以舒服和可控为准:疼痛升高、麻木或放射感出现时停止。";
+"guide.startPlan" = "开始 %1$@";
+
+// 弹窗与徽标
+"badge.accessibility" = "今日 %1$d/%2$d 项达标,本周力量 %3$d 次、跑步 %4$d 次";
+"popover.minutes" = "约 %1$d 分钟";
+"popover.weekSummary" = "本周 力量 %1$d · 恢复 %2$d · 跑步 %3$d";
+"popover.manual" = "手动记录(练完了补一条)";
+"popover.cta.begin" = "开始";
+"goal.strength.short" = "力量";
+"goal.recovery.short" = "恢复";
+"goal.run.short" = "跑步";
+
+// 休息建议
+"rec.rest.title" = "该休息了";
+"rec.rest.reason" = "已经连续训练 %1$@ 天,本周目标都达成了。恢复也是训练的一部分。";
+
+// 设置
+"settings.cooldown" = "两次提醒至少间隔";
+"settings.cooldown.30" = "30 分钟";
+"settings.cooldown.45" = "45 分钟";
+"settings.cooldown.60" = "60 分钟";
+"settings.cooldown.90" = "90 分钟";
+
+// 数据导出
+"settings.data" = "数据";
+"settings.export" = "导出为 CSV…";
+"settings.export.hint" = "导出全部训练记录,包含每组的次数与重量,可直接用 Excel 或 Numbers 打开。";
+"settings.export.footer" = "数据只存在本机,重装系统或换机前记得先导出一份。";

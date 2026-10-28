@@ -128,7 +128,7 @@ extension Recommendation {
         case .logRun:   return String(localized: "rec.run.title",       defaultValue: "本周力量已达标,可以跑步")
         case .recovery: return localized(key: titleKey, fallback: recoveryFallback)
         case .minimal:  return String(localized: "rec.minimal.title",   defaultValue: "做 8 分钟最低版")
-        case .rest:     return String(localized: "popover.cta.rest",    defaultValue: "今天休息")
+        case .rest:     return localized(key: titleKey, fallback: "")
         }
     }
 
@@ -144,6 +144,14 @@ extension Recommendation {
         case .minimal:
             let days = interpolations.first ?? "2"
             return "已经连续 \(days) 天没运动,先完成最低版,保持习惯。"
+        case .rest:
+            let days = interpolations.first ?? "6"
+            let format = NSLocalizedString(
+                "rec.rest.reason",
+                value: "已经连续训练 %1$@ 天,本周目标都达成了。恢复也是训练的一部分。",
+                comment: ""
+            )
+            return String(format: format, days)
         default:
             return localized(key: reasonKey, fallback: "")
         }

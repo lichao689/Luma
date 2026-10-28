@@ -128,13 +128,16 @@ struct ExerciseGuideView: View {
 private struct ExerciseDetail: View {
     let item: ExerciseGuideItem
 
+    @Environment(\.openWindow) private var openWindow
+
     private var exercise: Exercise { item.exercise }
-    private var prescription: ExercisePrescription { ExercisePrescription.for(item) }
+    private var prescription: PrescriptionText { PrescriptionText.make(for: item) }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 header
+                startButton
                 ExerciseMediaView(exercise: exercise)
                 prescriptionSection
                 visualFocusSection
@@ -178,8 +181,25 @@ private struct ExerciseDetail: View {
         }
     }
 
-    private var prescriptionSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+    /// 从详情页直接开练 —— 从"看"到"做"最自然的入口。
+    private var startButton: some View {
+        Button {
+            NSApplication.shared.activate(ignoringOtherApps: true)
+            openWindow(id: "workout", value: item.plan.rawValue)
+        } label: {
+            Label(startTitle, systemImage: "play.fill")
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .controlSize(.large)
+    }
+
+    private var startTitle: String {
+        let format = NSLocalizedString("guide.startPlan", value: "开始 %1$@", comment: "")
+        return String(format: format, item.plan.localizedName)
+    }
+
+    private var prescriptionSection: some View {        VStack(alignment: .leading, spacing: 8) {
             Label(String(localized: "guide.section.prescription", defaultValue: "本次处方"),
                   systemImage: "timer")
                 .font(.headline)
@@ -293,7 +313,11 @@ private struct ExerciseDetail: View {
     }
 }
 
-private struct ExercisePrescription {
+/// 把逻辑层的结构化 `Prescription` 转成详情页要显示的文案。
+///
+/// 剂量、休息、预计时长都由数值生成,不再手写一遍 —— 之前这些字符串
+/// 是硬编码在视图层的,和跟练模式用的数据是两份,容易对不上。
+private struct PrescriptionText {
     let dose: String
     let tempo: String
     let rest: String
@@ -301,178 +325,29 @@ private struct ExercisePrescription {
     let focus: String
     let intent: String
 
-    static func `for`(_ item: ExerciseGuideItem) -> ExercisePrescription {
-        switch (item.plan, item.exercise.id) {
-        case (.strengthA, "gobletSquat"):
-            return strength(
-                dose: "3 组 × 8-12 次",
-                tempo: "下蹲约 2 秒,起身约 1 秒",
-                rest: "45-75 秒",
-                estimate: "约 4-5 分钟",
-                focus: "膝盖跟脚尖、脚跟踩实、腰背中立"
-            )
-        case (.strengthA, "pushUp"):
-            return strength(
-                dose: "3 组 × 8-15 次",
-                tempo: "下落约 2 秒,推起约 1 秒",
-                rest: "45-75 秒",
-                estimate: "约 3-4 分钟",
-                focus: "身体一条线、手肘约 45 度、不塌腰"
-            )
-        case (.strengthA, "shoulderPress"):
-            return strength(
-                dose: "3 组 × 8-12 次",
-                tempo: "上推约 1 秒,下放约 2 秒",
-                rest: "60 秒",
-                estimate: "约 4 分钟",
-                focus: "肋骨不外翻、手腕中立、不后仰顶腰"
-            )
-        case (.strengthA, "gluteBridge"):
-            return strength(
-                dose: "3 组 × 12-15 次",
-                tempo: "上顶 1 秒,顶峰停 1 秒,下放 2 秒",
-                rest: "45-60 秒",
-                estimate: "约 3-4 分钟",
-                focus: "臀部发力、顶峰不顶腰、下放保持控制"
-            )
-        case (.strengthA, "plank"):
-            return strength(
-                dose: "3 组 × 30-60 秒",
-                tempo: "稳定保持,自然呼吸",
-                rest: "30-60 秒",
-                estimate: "约 3-5 分钟",
-                focus: "肩髋踝一线、核心收紧、不憋气"
-            )
-        case (.strengthB, "romanianDeadlift"):
-            return strength(
-                dose: "3 组 × 8-10 次",
-                tempo: "下放 2-3 秒,起身约 1 秒",
-                rest: "60-90 秒",
-                estimate: "约 4-5 分钟",
-                focus: "髋向后推、哑铃贴腿、背部中立"
-            )
-        case (.strengthB, "bentOverDumbbellRow"):
-            return strength(
-                dose: "3 组 × 10-12 次",
-                tempo: "拉起 1 秒,顶峰停 1 秒,下放 2 秒",
-                rest: "60 秒",
-                estimate: "约 4 分钟",
-                focus: "手肘拉向后腰、肩颈放松、躯干不甩"
-            )
-        case (.strengthB, "reverseLunge"):
-            return strength(
-                dose: "2-3 组 × 8-10 次/侧",
-                tempo: "下蹲约 2 秒,站起约 1 秒",
-                rest: "60-90 秒",
-                estimate: "约 5-7 分钟",
-                focus: "前膝跟脚尖、躯干稳定、时间紧做 2 组"
-            )
-        case (.strengthB, "proneWRaise"):
-            return strength(
-                dose: "2-3 组 × 10-12 次",
-                tempo: "抬起 1 秒,停 1 秒,下放 2 秒",
-                rest: "30-45 秒",
-                estimate: "约 3 分钟",
-                focus: "肩胛后下收、脖子放松、小幅控制"
-            )
-        case (.strengthB, "sidePlank"):
-            return strength(
-                dose: "2 组 × 20-40 秒/侧",
-                tempo: "稳定保持,自然呼吸",
-                rest: "30-45 秒",
-                estimate: "约 3-4 分钟",
-                focus: "髋不下沉、身体不翻转、肩肘不痛"
-            )
-        case (.recovery, "catCow"):
-            return recovery(
-                dose: "6-8 次慢循环",
-                tempo: "吸气下沉,呼气圆背,每次 8-10 秒",
-                rest: "无需正式休息",
-                estimate: "约 60-90 秒",
-                focus: "慢、舒服、不甩腰、不追求最大幅度"
-            )
-        case (.recovery, "pelvicTilt"):
-            return recovery(
-                dose: "1-2 组 × 8-10 次",
-                tempo: "呼气后倾,停 1-2 秒,放松回中立",
-                rest: "约 30 秒",
-                estimate: "约 60-90 秒",
-                focus: "小幅控制、腰背轻贴地、不要做成臀桥"
-            )
-        case (.recovery, "deadBug"):
-            return recovery(
-                dose: "1 组 × 5-6 次/侧",
-                tempo: "慢伸约 3 秒,慢收约 2 秒",
-                rest: "30-45 秒",
-                estimate: "约 90 秒",
-                focus: "腰背贴地、动作慢、能呼吸"
-            )
-        case (.recovery, "birdDog"):
-            return recovery(
-                dose: "1 组 × 5-6 次/侧",
-                tempo: "伸出 2 秒,停 1 秒,慢慢收回",
-                rest: "30-45 秒",
-                estimate: "约 90 秒",
-                focus: "骨盆不晃、手脚伸长、不塌腰"
-            )
-        case (.recovery, "gluteBridge"):
-            return recovery(
-                dose: "1 组 × 10-12 次",
-                tempo: "上顶 1 秒,顶峰停 1 秒,慢放下",
-                rest: "约 30 秒",
-                estimate: "约 60 秒",
-                focus: "恢复版只做臀部激活,不追求力竭"
-            )
-        case (.recovery, "hipFlexorStretch"):
-            return recovery(
-                dose: "1 组 × 30 秒/侧",
-                tempo: "稳定保持,自然呼吸",
-                rest: "换侧即可",
-                estimate: "约 60-75 秒",
-                focus: "骨盆微后倾、拉髋前侧、不要压腰"
-            )
-        default:
-            return strength(
-                dose: item.exercise.setsReps,
-                tempo: "慢做,全程可控",
-                rest: "45-60 秒",
-                estimate: "约 3-5 分钟",
-                focus: item.exercise.localizedVisualFocus.first ?? "动作稳定、没有疼痛"
-            )
-        }
-    }
-
-    private static func strength(
-        dose: String,
-        tempo: String,
-        rest: String,
-        estimate: String,
-        focus: String
-    ) -> ExercisePrescription {
-        ExercisePrescription(
+    static func make(for item: ExerciseGuideItem) -> PrescriptionText {
+        let rx = PrescriptionLibrary.prescription(for: item.plan, exerciseID: item.exercise.id)
+        let perSideSuffix = rx.perSide
+            ? String(localized: "guide.prescription.perSide", defaultValue: "/侧")
+            : ""
+        let dose: String = rx.isHold
+            ? String(format: NSLocalizedString("guide.prescription.doseHold", value: "%1$d 组 × %2$@ 秒%3$@", comment: ""),
+                     rx.sets, rx.repRangeText, perSideSuffix)
+            : String(format: NSLocalizedString("guide.prescription.doseReps", value: "%1$d 组 × %2$@ 次%3$@", comment: ""),
+                     rx.sets, rx.repRangeText, perSideSuffix)
+        let rest = rx.restSeconds == 0
+            ? String(localized: "guide.prescription.noRest", defaultValue: "无需正式休息")
+            : String(format: NSLocalizedString("guide.prescription.restSeconds", value: "%1$d 秒", comment: ""), rx.restSeconds)
+        return PrescriptionText(
             dose: dose,
-            tempo: tempo,
+            tempo: NSLocalizedString(rx.tempoKey, value: String(localized: "guide.prescription.tempoFallback", defaultValue: "慢做,全程可控"), comment: ""),
             rest: rest,
-            estimate: estimate,
-            focus: focus,
-            intent: "力量训练以动作不变形为准:最后 2 次可以吃力,但不要做到疼痛或失控。"
-        )
-    }
-
-    private static func recovery(
-        dose: String,
-        tempo: String,
-        rest: String,
-        estimate: String,
-        focus: String
-    ) -> ExercisePrescription {
-        ExercisePrescription(
-            dose: dose,
-            tempo: tempo,
-            rest: rest,
-            estimate: estimate,
-            focus: focus,
-            intent: "腰背恢复以舒服和可控为准:疼痛升高、麻木或放射感出现时停止。"
+            estimate: String(format: NSLocalizedString("guide.prescription.estimateMinutes", value: "约 %1$d 分钟", comment: ""), rx.estimatedMinutes),
+            focus: item.exercise.localizedVisualFocus.first
+                ?? String(localized: "guide.prescription.focusFallback", defaultValue: "动作稳定、没有疼痛"),
+            intent: item.plan == .recovery
+                ? String(localized: "guide.prescription.intentRecovery", defaultValue: "腰背恢复以舒服和可控为准:疼痛升高、麻木或放射感出现时停止。")
+                : String(localized: "guide.prescription.intentStrength", defaultValue: "力量训练以动作不变形为准:最后 2 次可以吃力,但不要做到疼痛或失控。")
         )
     }
 }
@@ -480,7 +355,8 @@ private struct ExercisePrescription {
 /// 媒体区:视频 > 图片 > 占位,自动降级。
 /// 资源查找用 `Bundle.main.url(forResource:withExtension:)`,所以只要文件
 /// 名与 assetName 对得上、且已加入 Resources build phase 即可被找到。
-private struct ExerciseMediaView: View {
+/// 非 private:跟练模式要复用同一套降级逻辑。
+struct ExerciseMediaView: View {
     let exercise: Exercise
 
     /// 当前选中的媒体来源(决定渲染哪种视图)。

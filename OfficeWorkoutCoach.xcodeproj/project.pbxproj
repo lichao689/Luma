@@ -26,6 +26,8 @@
 		AA000061 /* AppMenuBarIconTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = AB000061; };
 		AA000034 /* Exercises in Resources */ = {isa = PBXBuildFile; fileRef = AB000034; };
 		AA000050 /* OfficeWorkoutLogic in Frameworks */ = {isa = PBXBuildFile; productRef = AF600002 /* OfficeWorkoutLogic */; };
+		AA000025 /* WorkoutStartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015 /* WorkoutStartView.swift */; };
+		AA000026 /* SetRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000016 /* SetRecord.swift */; };
 		AA100001 /* AppQuitAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100001 /* AppQuitAction.swift */; };
 		AA100002 /* AppQuitActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100002 /* AppQuitActionTests.swift */; };
 		AA100003 /* AppQuitAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100001 /* AppQuitAction.swift */; };
@@ -52,6 +54,8 @@
 		AB000032 /* en Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
 		AB000036 /* en InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
 		AB100000 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		AB000015 /* WorkoutStartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStartView.swift; sourceTree = "<group>"; };
+		AB000016 /* SetRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetRecord.swift; sourceTree = "<group>"; };
 		AB100001 /* AppQuitAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppQuitAction.swift; sourceTree = "<group>"; };
 		AB100002 /* AppQuitActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppQuitActionTests.swift; sourceTree = "<group>"; };
 		AB200000 /* luma.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = luma.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -121,6 +125,7 @@
 			children = (
 				AB000003 /* WorkoutSession.swift */,
 				AB000004 /* UserGoal.swift */,
+				AB000016 /* SetRecord.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -133,6 +138,7 @@
 				AB000012 /* SummaryView.swift */,
 				AB000013 /* SettingsView.swift */,
 				AB000014 /* ExerciseGuideView.swift */,
+				AB000015 /* WorkoutStartView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -283,6 +289,8 @@
 				AA000012 /* SummaryView.swift in Sources */,
 				AA000013 /* SettingsView.swift in Sources */,
 				AA000014 /* ExerciseGuideView.swift in Sources */,
+				AA000025 /* WorkoutStartView.swift in Sources */,
+				AA000026 /* SetRecord.swift in Sources */,
 				AA100001 /* AppQuitAction.swift in Sources */,
 				AA000020 /* WorkoutRepository.swift in Sources */,
 				AA000023 /* NotificationManager.swift in Sources */,
