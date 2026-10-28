@@ -24,3 +24,9 @@ dist/
 # 临时/备份
 *.tmp
 *~
+
+# 本地工具目录(Agent 记忆等,不属于项目源码)
+.workbuddy-ai/
+
+# 与项目无关的本地笔记(lark-cli 使用经验)
+lark/
