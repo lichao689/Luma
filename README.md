@@ -11,9 +11,11 @@
 ## 现状(已验证)
 
 - ✅ `xcodebuild` **BUILD SUCCEEDED**(零警告),App 可启动并驻留菜单栏
-- ✅ **25 个单元测试全绿**(LogicPackage:14 推荐 + 11 动作库)
+- ✅ **25 个逻辑测试全绿**(LogicPackage:14 推荐 + 11 动作库)+ 1 个 App 层测试(退出顺序)
 - ✅ 动作示意窗口(15 个办公室动作:哑铃 + 垫上训练 / 图上重点 / 常见错误 + 媒体自动降级)
+- ✅ 动作示意窗口支持视频演示(3 个动作已有 mp4,循环静音播放)+ 本次处方(剂量/节奏/休息/预计)
 - ✅ 中英双语本地化(zh-Hans 默认 + en)
+- ✅ 可正常退出:弹窗右下角电源按钮,或 ⌘Q
 
 ## 架构(两层)
 
@@ -67,6 +69,10 @@ xcodebuild -project OfficeWorkoutCoach.xcodeproj \
 # 运行逻辑测试
 swift test --package-path LogicPackage
 ```
+
+> 若测试报 `sandbox-exec: sandbox_apply: Operation not permitted`(较新的 macOS 上
+> SwiftPM 编译 manifest 时会遇到),加 `--disable-sandbox` 即可:
+> `swift test --package-path LogicPackage --disable-sandbox`
 
 或在 Xcode 中双击 `OfficeWorkoutCoach.xcodeproj`,⌘R 运行。
 
