@@ -73,7 +73,7 @@ struct TrainingPlanEditorView: View {
             Button(String(localized: "plan.delete", defaultValue: "删除已保存计划"), role: .destructive) {
                 guard let plan = planToDelete else { return }
                 do { try store.deletePlan(id: plan.id); planToDelete = nil }
-                catch { workout.errorMessage = error.localizedDescription }
+                catch { workout.errorMessage = userFacingError(error) }
             }
         }
     }
@@ -140,7 +140,7 @@ struct TrainingPlanEditorView: View {
     }
     private func replace(_ old: String, with new: String) {
         do { workout.draft = try workout.draft.replacing(exerciseID: old, with: new) }
-        catch { workout.errorMessage = error.localizedDescription }
+        catch { workout.errorMessage = userFacingError(error) }
     }
     private func add(_ exercise: Exercise) {
         let rx = PrescriptionLibrary.prescription(for: workout.draft.baseType, exerciseID: exercise.id)
@@ -155,6 +155,6 @@ struct TrainingPlanEditorView: View {
             candidate.updatedAt = .now
             try store.savePlan(candidate)
             workout.draft = candidate
-        } catch { workout.errorMessage = error.localizedDescription }
+        } catch { workout.errorMessage = userFacingError(error) }
     }
 }

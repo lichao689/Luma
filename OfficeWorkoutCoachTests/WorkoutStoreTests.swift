@@ -165,6 +165,33 @@ struct WorkoutStoreTests {
         #expect(try first.snapshot().tombstones.contains { $0.id == id && $0.kind == .session })
     }
 
+    @Test func conflictingHealthImportAndRestoreLeaveTheEntireStoreUnchanged() throws {
+        let store = try WorkoutStore(inMemory: true)
+        let sleepID = UUID()
+        func packet(count: Double = 1000, stage: HealthSleepStage = .asleepCore,
+                    generatedOffset: Double = 0) -> HealthBridgePacket {
+            let day = HealthStepDay(start: now.addingTimeInterval(-86_400), end: now,
+                timeZoneIdentifier: "UTC", count: count, observedAt: now)
+            let sleep = HealthSleepSample(id: sleepID, start: now.addingTimeInterval(-7200), end: now,
+                stage: stage, sourceBundleIdentifier: "test.synthetic")
+            return HealthBridgePacket(generatedAt: now.addingTimeInterval(generatedOffset),
+                periodStart: now.addingTimeInterval(-86_400), periodEnd: now, timeZoneIdentifier: "UTC",
+                stepDays: [day], sleepSamples: [sleep])
+        }
+        try store.importHealth(packet())
+        let original = try store.snapshot(now: now)
+        let stepsConflict = packet(count: 2000, generatedOffset: 10)
+        #expect(throws: HealthBridgeError.self) { try store.importHealth(stepsConflict) }
+        #expect(try store.snapshot(now: now) == original)
+        #expect(throws: HealthBridgeError.self) { try store.importHealth(packet(stage: .awake)) }
+        #expect(try store.snapshot(now: now) == original)
+        let invalidCombination = BackupSnapshot(deviceID: UUID(), exportedAt: now, healthPackets: [
+            BackupHealthPacket(id: stepsConflict.id, importedAt: now, json: try HealthBridgeCodec.encode(stepsConflict))
+        ])
+        #expect(throws: HealthBridgeError.self) { try store.restore(invalidCombination) }
+        #expect(try store.snapshot(now: now) == original)
+    }
+
     @Test func csvSeparatesRepetitionsAndSecondsAndPreservesSides() throws {
         let store = try WorkoutStore(inMemory: true)
         try store.saveWorkout(type: .strengthA, notes: "=SUM(1,2)", date: now, sets: actualSets())

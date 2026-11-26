@@ -85,7 +85,7 @@ struct OfficeWorkoutCoachApp: App {
                 do {
                     _ = try store.saveWorkout(type: .rest, durationMinutes: 0,
                         completion: .full, intensity: 1, sets: [])
-                } catch { store.lastError = error.localizedDescription }
+                } catch { store.lastError = userFacingError(error) }
             })
     }
 

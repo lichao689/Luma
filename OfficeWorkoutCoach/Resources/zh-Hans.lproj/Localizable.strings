@@ -503,3 +503,21 @@
 "workout.save" = "保存本次训练";
 "workout.saved" = "训练已保存";
 "workout.step.target" = "第 %1$d 组 · 目标 %2$d";
+
+// User-facing domain errors
+"error.plan.invalidName" = "请输入计划名称，最多 120 个字符。";
+"error.plan.invalidPlan" = "训练计划需要 1–15 个有效动作。";
+"error.plan.duplicateExercise" = "计划中有重复动作：%@。";
+"error.plan.unknownExercise" = "未知动作：%@。";
+"error.plan.invalidDose" = "%@ 的组数、次数或休息时长超出可接受范围。";
+"error.plan.invalidUnits" = "%@ 的次数、计时或左右侧设置不一致。";
+"error.plan.invalidReplacement" = "请选择动作模式相同、当前可用且未在计划中重复的替代动作。";
+"error.workout.notWorking" = "请先开始当前组。";
+"error.workout.invalidRepetitions" = "请输入有效的实际完成次数或秒数。";
+"error.workout.invalidWeight" = "请输入 0–500 kg 的重量，也可以留空。";
+"error.backup.unsupportedFormat" = "不支持此备份格式或版本。";
+"error.backup.tooLarge" = "备份的文件大小或记录数量超出可处理范围。";
+"error.backup.invalid" = "记录校验失败。\n详情：%@";
+"error.backup.conflict" = "记录存在冲突，本次操作未完成。\n详情：%@";
+"error.health.invalidDocument" = "健康数据文件校验失败。\n详情：%@";
+"error.health.fileTooLarge" = "健康数据文件不能超过 %d MiB。";

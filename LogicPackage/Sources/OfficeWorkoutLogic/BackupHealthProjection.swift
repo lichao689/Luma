@@ -27,6 +27,8 @@ public enum BackupHealthProjection {
             }
         }
         let deletedIDs = Set(tombstones.values.filter { $0.kind == .session }.map(\.id))
+        // Validate the complete cross-packet view before any store mutation.
+        _ = try mergedHealth(packets, locallyDeletedWorkoutIDs: deletedIDs)
         for packet in packets {
             for workout in packet.workouts where !deletedIDs.contains(workout.id) {
                 if workout.activity == .running { sourceVersions[workout.id, default: []].append(try run(workout)) }
@@ -78,6 +80,48 @@ public enum BackupHealthProjection {
         result.sets = sets.values.sorted { $0.id.uuidString < $1.id.uuidString }
         result.tombstones = tombstones.values.sorted { $0.key < $1.key }
         try BackupCodec.validate(result)
+        return result
+    }
+
+    public static func healthSnapshot(in value: BackupSnapshot) throws -> HealthBridgePacket? {
+        var packets: [HealthBridgePacket] = []
+        for archive in value.healthPackets { packets.append(try HealthBridgeCodec.decode(archive.json)) }
+        let deleted = Set(value.tombstones.filter { $0.kind == .session }.map(\.id))
+        return try mergedHealth(packets, locallyDeletedWorkoutIDs: deleted)
+    }
+
+    /// Merge all original observations at the same timestamp first. Otherwise
+    /// carrying an older sample inside a newer aggregate would incorrectly make
+    /// its observation time newer and manufacture a conflict with a valid edit.
+    private static func mergedHealth(_ packets: [HealthBridgePacket],
+                                     locallyDeletedWorkoutIDs: Set<UUID>) throws -> HealthBridgePacket? {
+        let groups = Dictionary(grouping: packets, by: \.generatedAt)
+        var deletedWorkouts = locallyDeletedWorkoutIDs
+        var deletedSleep = Set<UUID>()
+        for packet in packets {
+            deletedWorkouts.formUnion(packet.deletedWorkoutIDs)
+            deletedSleep.formUnion(packet.deletedSleepIDs)
+        }
+        let workoutIDs = deletedWorkouts.sorted { $0.uuidString < $1.uuidString }
+        let sleepIDs = deletedSleep.sorted { $0.uuidString < $1.uuidString }
+        var result: HealthBridgePacket?
+        for timestamp in groups.keys.sorted() {
+            var observation: HealthBridgePacket?
+            let originals = groups[timestamp, default: []].sorted { $0.id.uuidString < $1.id.uuidString }
+            for original in originals {
+                var incoming = original
+                // Deletion evidence from any archive wins, even if that export
+                // is encountered after two now-deleted conflicting samples.
+                incoming.deletedWorkoutIDs = workoutIDs
+                incoming.deletedSleepIDs = sleepIDs
+                observation = try HealthBridgeMerger.merge(existing: observation, incoming: incoming,
+                                                            locallyDeletedWorkoutIDs: deletedWorkouts)
+            }
+            if let observation {
+                result = try HealthBridgeMerger.merge(existing: result, incoming: observation,
+                                                      locallyDeletedWorkoutIDs: deletedWorkouts)
+            }
+        }
         return result
     }
 

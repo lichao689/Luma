@@ -131,7 +131,7 @@ struct QuickLogView: View {
                 notes: notes.isEmpty ? nil : notes, date: sessionDate, sets: []
             )
             onDone(true)
-        } catch { errorMessage = error.localizedDescription }
+        } catch { errorMessage = userFacingError(error) }
     }
 }
 

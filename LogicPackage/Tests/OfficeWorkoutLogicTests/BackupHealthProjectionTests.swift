@@ -95,4 +95,39 @@ final class BackupHealthProjectionTests: XCTestCase {
         XCTAssertEqual(restored.sessions.first?.id, id)
         XCTAssertEqual(restored.sessions.first?.durationMinutes, 30)
     }
+    func testConflictingStepsAndSleepAreRejectedBeforeACombinedBackupIsProduced() throws {
+        let sleepID = UUID()
+        func packet(count: Double = 1000, stage: HealthSleepStage = .asleepCore, generatedOffset: Double = 0) -> HealthBridgePacket {
+            let day = HealthStepDay(start: now.addingTimeInterval(-86_400), end: now,
+                                   timeZoneIdentifier: "UTC", count: count, observedAt: now)
+            let sleep = HealthSleepSample(id: sleepID, start: now.addingTimeInterval(-7200), end: now,
+                                          stage: stage, sourceBundleIdentifier: "test.synthetic")
+            return HealthBridgePacket(generatedAt: now.addingTimeInterval(generatedOffset),
+                periodStart: now.addingTimeInterval(-86_400), periodEnd: now, timeZoneIdentifier: "UTC",
+                stepDays: [day], sleepSamples: [sleep])
+        }
+        func raw(_ packet: HealthBridgePacket) throws -> BackupHealthPacket {
+            BackupHealthPacket(id: packet.id, importedAt: now, json: try HealthBridgeCodec.encode(packet))
+        }
+        let base = try snapshot([raw(packet())])
+        let conflictingSteps = try snapshot([raw(packet(count: 2000, generatedOffset: 10))])
+        let conflictingSleep = try snapshot([raw(packet(stage: .awake))])
+        XCTAssertThrowsError(try BackupMerger.merge(local: base, incoming: conflictingSteps))
+        XCTAssertThrowsError(try BackupMerger.preview(local: base, incoming: conflictingSteps))
+        XCTAssertThrowsError(try BackupMerger.merge(local: base, incoming: conflictingSleep))
+        XCTAssertEqual(base.healthPackets.count, 1)
+    }
+
+    func testUnrelatedPacketDoesNotChangeTheObservationTimeOfInheritedSamples() throws {
+        let id = UUID()
+        let original = try archive([workout(id: id)])
+        let unrelatedAtNewTime = try archive([workout()], offset: 10)
+        let updatedAtSameNewTime = try archive([workout(id: id, seconds: 1800)], offset: 10)
+        let value = try snapshot([original, unrelatedAtNewTime, updatedAtSameNewTime])
+        let health = try BackupHealthProjection.healthSnapshot(in: value)
+        XCTAssertEqual(health?.workouts.first { $0.id == id }?.durationSeconds, 1800)
+        XCTAssertEqual(value.sessions.first { $0.id == id }?.durationMinutes, 30)
+        XCTAssertEqual(health?.workouts.count, 2)
+    }
+
 }

@@ -73,7 +73,7 @@ struct SummaryView: View {
             Button(String(localized: "summary.delete", defaultValue: "删除这条记录"), role: .destructive) {
                 guard let id = deleting?.id else { return }
                 do { try store.deleteSession(id: id); deleting = nil; reload() }
-                catch { errorMessage = error.localizedDescription; deleting = nil }
+                catch { errorMessage = userFacingError(error); deleting = nil }
             }
         }
     }
@@ -237,6 +237,6 @@ struct SummaryView: View {
 
     private func reload() {
         do { snapshot = try store.snapshot(); health = try store.healthSnapshot(); errorMessage = nil }
-        catch { errorMessage = error.localizedDescription }
+        catch { errorMessage = userFacingError(error) }
     }
 }

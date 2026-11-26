@@ -130,7 +130,7 @@ struct DataManagementView: View {
     private func run(_ operation: () throws -> Void) {
         errorMessage = nil; message = nil
         do { try operation() }
-        catch { errorMessage = error.localizedDescription }
+        catch { errorMessage = userFacingError(error) }
     }
 
     private func exportBackup() {
@@ -196,7 +196,7 @@ struct DataManagementView: View {
                     try access(folder) { try BackupFolderSync.publish(store.snapshot(), to: folder) }
                 } catch {
                     throw NSError(domain: "LumaFolderSync", code: 1, userInfo: [NSLocalizedDescriptionKey:
-                        String(localized: "data.sync.publish.failed", defaultValue: "数据已合并，但本设备快照写入失败。可安全重试同步：") + " " + error.localizedDescription])
+                        String(localized: "data.sync.publish.failed", defaultValue: "数据已合并，但本设备快照写入失败。可安全重试同步：") + " " + userFacingError(error)])
                 }
             }
             message = String(localized: "data.import.done", defaultValue: "合并已完成。重复导入不会新增相同记录。")

@@ -41,7 +41,7 @@ final class WorkoutCoordinator: ObservableObject {
             repetitionsText = ""
             weightText = ""
             updateReminderState()
-        } catch { errorMessage = error.localizedDescription }
+        } catch { errorMessage = userFacingError(error) }
     }
 
     func startSet() { mutate { $0.start() } }
@@ -83,7 +83,7 @@ final class WorkoutCoordinator: ObservableObject {
             repetitionsText = ""
             weightText = ""
             updateReminderState()
-        } catch { errorMessage = error.localizedDescription }
+        } catch { errorMessage = userFacingError(error) }
     }
 
     func save(using store: WorkoutStore) {
@@ -98,7 +98,7 @@ final class WorkoutCoordinator: ObservableObject {
             )
             saved = true
             updateReminderState()
-        } catch { errorMessage = error.localizedDescription }
+        } catch { errorMessage = userFacingError(error) }
     }
 
     func reset() {

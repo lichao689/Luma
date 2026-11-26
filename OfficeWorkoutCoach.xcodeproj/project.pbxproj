@@ -44,6 +44,8 @@
 		6ECB531206DA639C3FBADE0E /* Persistence source in Tests */ = {isa = PBXBuildFile; fileRef = AB000024; };
 		625925388A8F0C4AE6EBDB4F /* WorkoutStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4BBD347AD66F09E4EA25736; };
 		6E3E9DB13D5066D465C1BA04 /* OfficeWorkoutLogic in Test Frameworks */ = {isa = PBXBuildFile; productRef = AF600002 /* OfficeWorkoutLogic */; };
+		0350E1A6676684C503153A6C /* UserFacingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407C93F79333B1D9510770F9; };
+		A4C3B4698DA3672614791B81 /* UserFacingError.swift in Tests */ = {isa = PBXBuildFile; fileRef = 407C93F79333B1D9510770F9; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -79,6 +81,7 @@
 		EC0C730942599E8FD5070004 /* WorkoutLaunchModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLaunchModifier.swift; sourceTree = "<group>"; };
 		1EC1052EEE8074125E5F5644 /* DataManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManagementView.swift; sourceTree = "<group>"; };
 		F4BBD347AD66F09E4EA25736 /* WorkoutStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStoreTests.swift; sourceTree = "<group>"; };
+		407C93F79333B1D9510770F9 /* UserFacingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserFacingError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -176,6 +179,7 @@
 				AB000020 /* WorkoutRepository.swift */,
 				AB000023 /* NotificationManager.swift */,
 				AB000024 /* UILocalization.swift */,
+				407C93F79333B1D9510770F9 /* UserFacingError.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -327,6 +331,7 @@
 				AA000020 /* WorkoutRepository.swift in Sources */,
 				AA000023 /* NotificationManager.swift in Sources */,
 				AA000024 /* UILocalization.swift in Sources */,
+				0350E1A6676684C503153A6C /* UserFacingError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -336,6 +341,7 @@
 			files = (
 				AA100003 /* AppQuitAction.swift in Sources */,
 				AA100002 /* AppQuitActionTests.swift in Sources */,
+				A4C3B4698DA3672614791B81 /* UserFacingError.swift in Tests */,
 				D14941E142D3E3F4DA5AFCF6 /* Persistence source in Tests */,
 				7F326A6546F3375BC2164BAD /* Persistence source in Tests */,
 				1A7B6F7C89F7F2427501AC42 /* Persistence source in Tests */,

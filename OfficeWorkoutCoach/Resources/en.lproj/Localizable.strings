@@ -503,3 +503,21 @@
 "workout.save" = "Save this workout";
 "workout.saved" = "Workout saved";
 "workout.step.target" = "Set %1$d · Target %2$d";
+
+// User-facing domain errors
+"error.plan.invalidName" = "Enter a plan name of up to 120 characters.";
+"error.plan.invalidPlan" = "A workout plan needs 1–15 valid exercises.";
+"error.plan.duplicateExercise" = "The plan includes this exercise more than once: %@.";
+"error.plan.unknownExercise" = "Unknown exercise: %@.";
+"error.plan.invalidDose" = "Sets, reps, or rest are out of range for %@.";
+"error.plan.invalidUnits" = "%@ has mismatched repetition, timing, or side settings.";
+"error.plan.invalidReplacement" = "Choose an available exercise with a matching movement pattern that is not already in the plan.";
+"error.workout.notWorking" = "Start the current set first.";
+"error.workout.invalidRepetitions" = "Enter a valid number of completed reps or seconds.";
+"error.workout.invalidWeight" = "Enter a weight from 0 to 500 kg, or leave it empty.";
+"error.backup.unsupportedFormat" = "This backup format or version is not supported.";
+"error.backup.tooLarge" = "The backup exceeds the supported file size or record count.";
+"error.backup.invalid" = "The records could not be validated.\nDetails: %@";
+"error.backup.conflict" = "Conflicting records prevented this operation.\nDetails: %@";
+"error.health.invalidDocument" = "The health data file could not be validated.\nDetails: %@";
+"error.health.fileTooLarge" = "The health data file cannot exceed %d MiB.";

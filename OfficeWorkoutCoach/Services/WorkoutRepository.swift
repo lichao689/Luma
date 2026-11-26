@@ -54,14 +54,18 @@ final class WorkoutStore: ObservableObject {
             changeToken &+= 1
         } catch {
             container.mainContext.rollback()
-            lastError = error.localizedDescription
+            lastError = userFacingError(error)
             throw error
         }
     }
 
     private func read<T>(_ fallback: T, _ operation: () throws -> T) -> T {
         do { return try operation() }
-        catch { lastError = error.localizedDescription; return fallback }
+        catch {
+            let message = userFacingError(error)
+            if lastError != message { lastError = message }
+            return fallback
+        }
     }
 
     private func requiredGoal() throws -> UserGoal {
@@ -75,7 +79,7 @@ final class WorkoutStore: ObservableObject {
 
     func updateGoal(_ values: UserGoalValues) {
         do { try updateGoalSafely(values) }
-        catch { lastError = error.localizedDescription }
+        catch { lastError = userFacingError(error) }
     }
 
     func updateGoalSafely(_ values: UserGoalValues) throws {
@@ -153,13 +157,13 @@ final class WorkoutStore: ObservableObject {
         do { try saveWorkout(id: id, type: type, planCode: planCode, durationMinutes: durationMinutes,
                              completion: completion, intensity: intensity, bodyFeeling: bodyFeeling,
                              notes: notes, date: date) }
-        catch { lastError = error.localizedDescription }
+        catch { lastError = userFacingError(error) }
         return id
     }
 
     func delete(_ session: WorkoutSession) {
         do { try deleteSession(id: session.id) }
-        catch { lastError = error.localizedDescription }
+        catch { lastError = userFacingError(error) }
     }
 
     func deleteSession(id: UUID) throws {
@@ -325,15 +329,8 @@ final class WorkoutStore: ObservableObject {
 
     // MARK: - Explicit Apple Health bridge import
 
-    func healthSnapshot() throws -> HealthBridgePacket? { try mergedHealth(in: snapshot()) }
-
-    private func mergedHealth(in value: BackupSnapshot) throws -> HealthBridgePacket? {
-        let deleted = Set(value.tombstones.filter { $0.kind == .session }.map(\.id))
-        let packets = try value.healthPackets.map { try HealthBridgeCodec.decode($0.json) }
-            .sorted { $0.generatedAt == $1.generatedAt ? $0.id.uuidString < $1.id.uuidString : $0.generatedAt < $1.generatedAt }
-        return try packets.reduce(nil) { existing, incoming in
-            try HealthBridgeMerger.merge(existing: existing, incoming: incoming, locallyDeletedWorkoutIDs: deleted)
-        }
+    func healthSnapshot() throws -> HealthBridgePacket? {
+        try BackupHealthProjection.healthSnapshot(in: snapshot())
     }
 
     func previewHealthImport(_ packet: HealthBridgePacket) throws -> HealthImportPreview {
