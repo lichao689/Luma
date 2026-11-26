@@ -32,7 +32,7 @@
 // Popover
 "popover.today.title" = "今日建议";
 "popover.quick.title" = "快速记录";
-"popover.progress.title" = "本周进度";
+"popover.progress.title" = "目标进度";
 "popover.records" = "查看记录";
 "popover.settings" = "设置";
 "popover.quit" = "退出小盏";
@@ -262,7 +262,7 @@
 "ex.hipFlexorStretch.focus" = "骨盆微后倾;髋前侧被拉开;躯干保持直立。";
 "ex.hipFlexorStretch.easier" = "膝盖下垫毛巾;站姿弓步拉伸;缩短保持时间。";
 "ex.hipFlexorStretch.stop" = "膝盖压痛;腰椎挤压感;腿部麻木或刺痛。";
-"settings.daily" = "每日目标";
+"settings.daily" = "日内目标与上限";
 
 // 跟练模式
 "workout.progress" = "第 %1$d / %2$d 组";
@@ -521,3 +521,5 @@
 "error.backup.conflict" = "记录存在冲突，本次操作未完成。\n详情：%@";
 "error.health.invalidDocument" = "健康数据文件校验失败。\n详情：%@";
 "error.health.fileTooLarge" = "健康数据文件不能超过 %d MiB。";
+
+"goal.recovery.day" = "日恢复";

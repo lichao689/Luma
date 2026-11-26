@@ -135,7 +135,7 @@ struct MenuBarPopoverView: View {
             }
             goalBar(label: String(localized: "goal.strength.week", defaultValue: "周力量"),
                     done: stats.strengthCount, target: goal.weeklyStrengthTarget)
-            goalBar(label: String(localized: "goal.recovery.short", defaultValue: "恢复"),
+            goalBar(label: String(localized: "goal.recovery.day", defaultValue: "日恢复"),
                     done: stats.recoveryCountToday, target: goal.dailyRecoveryTarget)
             goalBar(label: String(localized: "goal.run.week", defaultValue: "周跑步"),
                     done: stats.runCount, target: goal.weeklyRunTarget)

@@ -32,7 +32,7 @@
 // Popover
 "popover.today.title" = "Today's suggestion";
 "popover.quick.title" = "Quick log";
-"popover.progress.title" = "This week";
+"popover.progress.title" = "Goal progress";
 "popover.records" = "Records";
 "popover.settings" = "Settings";
 "popover.quit" = "Quit luma";
@@ -262,7 +262,7 @@
 "ex.hipFlexorStretch.focus" = "Pelvis slightly tucked; front of rear hip opens; torso stays upright.";
 "ex.hipFlexorStretch.easier" = "Pad the knee; use a standing lunge stretch; hold for less time.";
 "ex.hipFlexorStretch.stop" = "Knee pressure pain; low-back compression; numbness or tingling.";
-"settings.daily" = "Daily goals";
+"settings.daily" = "Daily targets and limits";
 
 // Workout session
 "workout.progress" = "Set %1$d of %2$d";
@@ -521,3 +521,5 @@
 "error.backup.conflict" = "Conflicting records prevented this operation.\nDetails: %@";
 "error.health.invalidDocument" = "The health data file could not be validated.\nDetails: %@";
 "error.health.fileTooLarge" = "The health data file cannot exceed %d MiB.";
+
+"goal.recovery.day" = "Recovery / day";
