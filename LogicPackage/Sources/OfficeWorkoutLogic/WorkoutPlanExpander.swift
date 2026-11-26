@@ -5,7 +5,7 @@ import Foundation
 /// 这是纯数据,不含 UI 类型。App 层拿它去配 `Exercise` 和 `Prescription`,
 /// 单测则可以直接数步数、查顺序。
 public struct WorkoutPlanStep: Equatable, Identifiable, Sendable {
-    public enum Side: String, Equatable, Sendable {
+    public enum Side: String, Codable, Equatable, Sendable {
         case left, right
     }
 

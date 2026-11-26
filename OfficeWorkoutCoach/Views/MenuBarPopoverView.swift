@@ -9,6 +9,7 @@ struct MenuBarPopoverView: View {
 
     @EnvironmentObject private var store: WorkoutStore
     @EnvironmentObject private var notifier: NotificationManager
+    @EnvironmentObject private var workout: WorkoutCoordinator
     @Environment(\.openSettings) private var openSettings
     @Environment(\.openWindow) private var openWindow
     @State private var sessions: [WorkoutSession] = []
@@ -25,10 +26,7 @@ struct MenuBarPopoverView: View {
     }
     @State private var page: Page = .home
 
-    private var stats: WorkoutStats {
-        let records = sessions.map { $0.asRecord }
-        return WorkoutStatsService().stats(sessions: records)
-    }
+    private var stats: WorkoutStats { store.currentStats() }
     private var goal: UserGoalValues { UserGoalValues(store.fetchGoal()) }
     private var recommendation: Recommendation {
         RecommendationEngine.default.recommend(stats: stats, goal: goal)
@@ -48,20 +46,10 @@ struct MenuBarPopoverView: View {
                 SummaryView(onDone: backToHome)
             }
         }
-        .frame(width: 340)
+        .frame(width: page == .summary ? 520 : 360)
         .overlay(alignment: .top) { toastView }
         .onAppear { if page == .home { reload() } }
-        // React to notification deep-links (e.g. tapping "开始 8 分钟").
-        .onChange(of: notifier.pendingDeepLink) { _, link in
-            guard let link else { return }
-            switch link {
-            case .startMinimal:
-                withAnimation(.easeInOut(duration: 0.18)) { page = .quickLog(.minimal) }
-            case .startRecovery:
-                startWorkout(.recovery)
-            }
-            notifier.pendingDeepLink = nil
-        }
+        .onChange(of: store.changeToken) { reload() }
     }
 
     // MARK: - 首页
@@ -69,7 +57,17 @@ struct MenuBarPopoverView: View {
     private var homeView: some View {
         VStack(alignment: .leading, spacing: 12) {
             todayCard
+            Button {
+                if !workout.hasWorkout { workout.prepare(.strengthA) }
+                NSApplication.shared.activate(ignoringOtherApps: true)
+                openWindow(id: "workout")
+            } label: {
+                Label(workout.hasWorkout ? String(localized: "popover.resume", defaultValue: "回到本次训练") : String(localized: "popover.plans", defaultValue: "选择或编辑训练计划"), systemImage: "slider.horizontal.3")
+            }.buttonStyle(.borderless)
             progressSection
+            if let error = store.lastError {
+                Text(error).font(.caption).foregroundStyle(.red).textSelection(.enabled)
+            }
             Divider()
             quickLogDisclosure
             Divider()
@@ -135,11 +133,11 @@ struct MenuBarPopoverView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
-            goalBar(label: String(localized: "goal.strength.short", defaultValue: "力量"),
-                    done: stats.strengthCountToday, target: goal.dailyStrengthTarget)
-            goalBar(label: String(localized: "goal.recovery.short", defaultValue: "恢复"),
+            goalBar(label: String(localized: "goal.strength.week", defaultValue: "周力量"),
+                    done: stats.strengthCount, target: goal.weeklyStrengthTarget)
+            goalBar(label: String(localized: "goal.recovery.day", defaultValue: "日恢复"),
                     done: stats.recoveryCountToday, target: goal.dailyRecoveryTarget)
-            goalBar(label: String(localized: "goal.run.short", defaultValue: "跑步"),
+            goalBar(label: String(localized: "goal.run.week", defaultValue: "周跑步"),
                     done: stats.runCount, target: goal.weeklyRunTarget)
         }
     }
@@ -149,7 +147,7 @@ struct MenuBarPopoverView: View {
         HStack(spacing: 8) {
             Text(label)
                 .font(.caption)
-                .frame(width: 30, alignment: .leading)
+                .frame(width: 60, alignment: .leading)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(.secondary.opacity(0.15))
@@ -345,6 +343,7 @@ struct MenuBarPopoverView: View {
     /// 打开跟练窗口。菜单栏 App 必须先 activate,窗口才会到前台。
     private func startWorkout(_ plan: WorkoutType) {
         NSApplication.shared.activate(ignoringOtherApps: true)
-        openWindow(id: "workout", value: plan.rawValue)
+        workout.prepare(plan)
+        openWindow(id: "workout")
     }
 }

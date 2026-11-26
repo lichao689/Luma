@@ -7,6 +7,8 @@ import OfficeWorkoutLogic
 struct OfficeWorkoutCoachApp: App {
     @StateObject private var store: WorkoutStore
     @StateObject private var notifier = NotificationManager.shared
+    @StateObject private var workout = WorkoutCoordinator()
+    @State private var bootstrapped = false
     @State private var badgeClockTick = 0
     private static let menuBarTemplateImage: NSImage? = {
         guard let url = Bundle.main.url(forResource: "AppMenuBarIconTemplate", withExtension: "png"),
@@ -32,18 +34,13 @@ struct OfficeWorkoutCoachApp: App {
             MenuBarPopoverView(onQuit: quitApp)
                 .environmentObject(store)
                 .environmentObject(notifier)
+                .environmentObject(workout)
                 .modelContainer(store.container)
-                .task {
-                    // One-time bootstrap: request notification auth + start loop.
-                    await notifier.requestAuthorization()
-                    notifier.startMonitoring(
-                        goal: UserGoalValues(store.fetchGoal())
-                    ) {
-                        store.currentStats()
-                    }
-                }
         } label: {
             badgeLabel
+                .modifier(WorkoutLaunchModifier(notifier: notifier, workout: workout))
+                .task { await bootstrap() }
+                .onChange(of: store.changeToken) { notifier.refresh(from: UserGoalValues(store.fetchGoal())) }
         }
         .menuBarExtraStyle(.window)
         .commands {
@@ -63,24 +60,46 @@ struct OfficeWorkoutCoachApp: App {
         // 通过 openWindow(id: "exerciseGuide") 打开。
         Window(String(localized: "scene.guide.title", defaultValue: "动作示意"), id: "exerciseGuide") {
             ExerciseGuideView(preselected: nil)
+                .environmentObject(workout)
         }
         .defaultSize(width: 800, height: 560)
 
-        // 跟练窗口。用 `for: String.self` 把计划名带进窗口,这样同一个
-        // WindowGroup 可以开力量 A / 力量 B / 恢复等不同内容。
-        WindowGroup(id: "workout", for: String.self) { $planRaw in
-            if let planRaw {
-                WorkoutStartView(planRaw: planRaw)
-                    .environmentObject(store)
-                    .environmentObject(notifier)
-                    .modelContainer(store.container)
-            }
+        // A single scene prevents two sessions from racing reminder and save state.
+        Window(String(localized: "scene.workout.title", defaultValue: "训练计划与跟练"), id: "workout") {
+            WorkoutStartView()
+                .environmentObject(store)
+                .environmentObject(workout)
+                .modelContainer(store.container)
         }
         .defaultSize(width: 900, height: 620)
     }
 
     @MainActor
+    private func bootstrap() async {
+        guard !bootstrapped else { return }
+        bootstrapped = true
+        await notifier.requestAuthorization()
+        notifier.startMonitoring(goal: UserGoalValues(store.fetchGoal()),
+            statsProvider: { store.currentStats() },
+            restToday: {
+                do {
+                    _ = try store.saveWorkout(type: .rest, durationMinutes: 0,
+                        completion: .full, intensity: 1, sets: [])
+                } catch { store.lastError = userFacingError(error) }
+            })
+    }
+
+    @MainActor
     private func quitApp() {
+        if workout.hasUnsavedWork {
+            workout.pause()
+            let alert = NSAlert()
+            alert.messageText = String(localized: "quit.unsaved.title", defaultValue: "还有尚未保存的训练")
+            alert.informativeText = String(localized: "quit.unsaved.body", defaultValue: "返回跟练窗口可以结束并保存已完成的组。退出会丢弃本次未保存进度。")
+            alert.addButton(withTitle: String(localized: "quit.unsaved.stay", defaultValue: "继续使用"))
+            alert.addButton(withTitle: String(localized: "quit.unsaved.discard", defaultValue: "丢弃并退出"))
+            guard alert.runModal() == .alertSecondButtonReturn else { return }
+        }
         AppQuitAction(
             stopMonitoring: { notifier.stopMonitoring() },
             terminate: { NSApplication.shared.terminate(nil) }
@@ -134,9 +153,16 @@ struct OfficeWorkoutCoachApp: App {
 
     /// 今日进度只统计有日目标的项(力量、恢复)。跑步是周目标,不计入今日。
     private func todayProgress(stats: WorkoutStats, goal: UserGoalValues) -> TodayProgress {
+        let recommendation = RecommendationEngine.default.recommend(stats: stats, goal: goal)
+        if case .rest = recommendation.action {
+            return TodayProgress(done: 1, total: 1, accessibilityText: recommendation.localizedTitle)
+        }
         var done = 0
         var total = 0
-        if goal.dailyStrengthTarget > 0 {
+        let strengthDue: Bool
+        if case .startStrength = recommendation.action { strengthDue = true }
+        else { strengthDue = stats.strengthCountToday > 0 }
+        if goal.dailyStrengthTarget > 0 && strengthDue {
             total += 1
             if stats.strengthCountToday >= goal.dailyStrengthTarget { done += 1 }
         }

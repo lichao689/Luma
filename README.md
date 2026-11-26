@@ -1,183 +1,103 @@
 # 小盏 / luma
 
-一个驻留在 macOS 顶部菜单栏的办公室锻炼提醒 App:随手记录、弹性提醒、告诉你今天该练什么。
+一个驻留在 macOS 菜单栏的办公室训练助手：根据近期活动、目标和身体反馈安排训练，支持自定义计划、逐组跟练、历史趋势、备份和手动跨 Mac 同步。
 
-定位是 **弹性训练决策器**,不是固定日程健身 App。它只维护三件事:
+核心是回答三个问题：今天做过什么、这周还差什么、现在适合训练还是恢复。数据默认存放在本机；只有你明确导出或确认文件夹同步时才写到所选位置。
 
-1. 今天做了什么
-2. 这周还差什么
-3. 现在最适合做什么
+## 当前功能
 
-## 现状(已验证)
+| 方向 | 使用入口与行为 |
+| --- | --- |
+| 推荐 | 菜单栏的今日建议。结合周目标、训练日上限、力量/肌群间隔、近期时长和强度、明确休息、疼痛、疲劳及腿部酸痛。 |
+| 自定义计划 | “选择或编辑训练计划”：选择 A/B/恢复/最低版模板及 8、15、25 分钟预算；调整动作、顺序、组数、次数、休息，保存或另存计划。 |
+| 跟练 | 一个训练窗口管理同一会话；暂停/继续、实际次数与重量、计时保持、单侧动作、跳过休息或加 30 秒、提前结束后保存部分完成。 |
+| 进阶 | 在跟练中显示基于完整组记录的保守建议；点击接受才填入建议重量。缺少数据、疼痛或未知主观强度不会触发加重。 |
+| 历史 | 7/30/90 天活动次数与分钟图；按动作查看实际次数、保持秒数或重量趋势；删除前确认。 |
+| 数据 | 设置 → 数据：完整 JSON 备份/恢复、带明确单位的 CSV、健康文件导入、共享目录同步。 |
+| 健康桥 | 最小 iPhone 配套工具读取可见的运动、步数、睡眠并导出 JSON；Mac 预览后导入。只把跑步计入跑步目标。 |
+| 提醒 | 工作时间窗、柔性/周目标/久坐提醒；“开始”“稍后”“今天休息”均有实际操作；训练、会议、休息和设置变化会取消或抑制延迟升级。 |
 
-- ✅ `xcodebuild` **BUILD SUCCEEDED**(零警告),App 可启动并驻留菜单栏
-- ✅ **54 个逻辑测试全绿** + 1 个 App 层测试(退出顺序)
-- ✅ **跟练模式**:逐组引导 → 计时 → 组间休息倒计时 → 练完自动落库
-- ✅ **组次与重量记录**:每组单独记录,动作详情显示"上次做到多少"
-- ✅ 动作示意窗口(15 个办公室动作:哑铃 + 垫上训练 / 图上重点 / 常见错误 + 媒体自动降级)
-- ✅ 动作示意窗口支持视频演示(3 个动作已有 mp4,循环静音播放)+ 本次处方(剂量/节奏/休息/预计)
-- ✅ 中英双语本地化(zh-Hans 默认 + en)
-- ✅ 可正常退出:弹窗右下角电源按钮,或 ⌘Q
-- ✅ CSV 导出(设置 → 数据)
+Mac 界面提供简体中文和英文。动作库保留 15 个办公室动作及图示/文字/视频资源的自动降级。
 
-## 架构(两层)
+### 验证状态
 
-```
-LogicPackage/                          ← 纯 Swift 库(可独立测试,无 UI/SwiftData)
-  Sources/OfficeWorkoutLogic/
-    WorkoutType.swift                  类型 / 完成度枚举(public)
-    Models.swift                       UserGoalValues / ReminderMode(public)
-    SessionRecord.swift                值类型会话(逻辑层输入,含 note)
-    WorkoutStatsService.swift          统计快照(本周 / 连续空窗 / 连续训练天数 / 腰痛)
-    RecommendationEngine.swift         推荐引擎(纯函数,返回 key + 插值)
-    ExerciseLibrary.swift              动作库(Exercise / MuscleGroup / A·B 分组)
-    Prescription.swift                 处方库(组数/次数/单侧/休息/预计时长)
-    WorkoutPlanExpander.swift          计划 → 逐组步骤序列(单侧拆左右)
-  Tests/OfficeWorkoutLogicTests/
-    RecommendationEngineTests.swift    25 个测试(规则 + 优先级 + 边界 + 休息/重启)
-    ExerciseLibraryTests.swift         11 个测试(结构不变量 + 分组覆盖 + 无椅凳边界)
-    PrescriptionLibraryTests.swift     9 个测试(覆盖完整 / 单侧拆分 / 时长合理)
-    WorkoutPlanExpanderTests.swift     9 个测试(步骤顺序 / 左右拆分 / 编号连续)
+这轮 P0/P1 的实施范围、产品决定与设备验收清单见 [docs/p0-p1.md](docs/p0-p1.md)。纯逻辑可在 Linux 或 macOS 使用 Swift 6 独立测试；macOS App、SwiftData 集成测试和 iOS helper 的 SDK 构建由 [Luma validation](.github/workflows/apple-validation.yml) 检查。请以对应提交的 CI 结果为准，不能把旧版本的构建结果视为这轮改动的验收。
 
-OfficeWorkoutCoach/                    ← SwiftUI macOS App(菜单栏)
-  OfficeWorkoutCoachApp.swift          @main + MenuBarExtra(三态徽标)+ 跟练 Window
-  Models/
-    WorkoutSession.swift               @Model(SwiftData 持久层)→ asRecord 桥接
-    UserGoal.swift                     @Model(单例目标)→ UserGoalValues 桥接
-    SetRecord.swift                    @Model(逐组记录:次数 / 重量 / 时间)
-  Views/
-    MenuBarPopoverView.swift           菜单栏弹窗(今日建议卡片 + 进度条 + 折叠记录)
-    WorkoutStartView.swift             跟练模式(ready/working/resting/done 状态机)
-    QuickLogView.swift                 完成卡片
-    SummaryView.swift                  最近 7 天 + 周总结
-    SettingsView.swift                 目标 / 提醒 / 时间窗 / 数据导出
-    ExerciseGuideView.swift            动作示意窗口(列表+详情+处方+开练)
-  Services/
-    WorkoutRepository.swift            ModelContainer 封装(WorkoutStore + CSV 导出)
-    NotificationManager.swift          本地通知 + 久坐升级链 + 深链
-    UILocalization.swift               把 Logic 层的 key 翻译成显示文案
-  Resources/
-    Info.plist                         LSUIElement = true(纯菜单栏 App)
-    zh-Hans.lproj / en.lproj           Localizable.strings(含动作文案)
-    Exercises/                         动作示意媒体(自己往里放,见下文)
-```
+通知实际投递、既有 SwiftData 数据升级、iPhone 健康权限、真实健康源删除传播和两台 Mac 的文件传输仍需按清单在设备上验证。
 
-**为什么分两层**:把"今天该练什么"这类纯决策逻辑放在无 UI、无 SwiftData 的库里,
-能用 `swift test` 独立、快速地验证;UI 层只负责展示与持久化。`RecommendationEngine`
-返回稳定的 key + 插值值,App 层的 `UILocalization` 负责本地化显示。
+## 架构
 
-## 构建
+| 层 | 路径 | 职责 |
+| --- | --- | --- |
+| 纯 Swift 逻辑 | `LogicPackage/Sources/OfficeWorkoutLogic/` | 推荐与统计、动作/处方、训练计划、执行状态机、进阶、备份合并、历史聚合、健康文件契约、提醒资格。 |
+| macOS App | `OfficeWorkoutCoach/` | SwiftUI 菜单栏、计划与跟练窗口、Charts、通知、SwiftData、用户选择的文件操作。 |
+| iPhone 健康桥 | `HealthBridgeIOS/` | 只读 HealthKit 与手动文件导出；独立 Xcode 工程，共用逻辑包，无服务器。 |
+| 测试 | `LogicPackage/Tests/`、`OfficeWorkoutCoachTests/` | 纯行为边界与原生 SwiftData 事务/恢复/去重测试。 |
+
+`RecommendationEngine` 返回本地化 key 与插值，`WorkoutExecution` 只接收显式时钟和用户输入。`WorkoutCoordinator` 保留当前训练状态，`WorkoutStore` 负责每次操作的单次保存和失败回滚。
+
+## 构建与测试
+
+要求：macOS 14+；支持 Swift 6 的 Xcode。iPhone 健康桥要求 iOS 17+。在仓库根目录执行：
 
 ```sh
-cd /Volumes/WorkSSD/codes/luma
-
-# 构建 App(会自动解析本地 LogicPackage)
-xcodebuild -project OfficeWorkoutCoach.xcodeproj \
-           -scheme OfficeWorkoutCoach -configuration Debug build
-
-# 运行逻辑测试
 swift test --package-path LogicPackage
+
+xcodebuild test -project OfficeWorkoutCoach.xcodeproj \
+  -scheme OfficeWorkoutCoach -destination 'platform=macOS' \
+  CODE_SIGNING_ALLOWED=NO
+
+xcodebuild build -project HealthBridgeIOS/LumaHealthBridge.xcodeproj \
+  -scheme LumaHealthBridge -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_ALLOWED=NO
 ```
 
-> 若测试报 `sandbox-exec: sandbox_apply: Operation not permitted`(较新的 macOS 上
-> SwiftPM 编译 manifest 时会遇到),加 `--disable-sandbox` 即可:
-> `swift test --package-path LogicPackage --disable-sandbox`
->
-> 同理,在受限沙箱环境(某些 IDE 内置终端)里 `xcodebuild` 可能报
-> `swift-plugin-server ... produced malformed response` —— 这是 Swift 编译器给宏插件
-> 套的 `sandbox-exec` 跑不起来导致的,与代码无关。给编译器关掉沙箱即可:
-> `EXTRA_XCODEBUILD_ARGS='OTHER_SWIFT_FLAGS="-disable-sandbox"' tools/install_app.sh`
-
-或在 Xcode 中双击 `OfficeWorkoutCoach.xcodeproj`,⌘R 运行。
+也可在 Xcode 打开 `OfficeWorkoutCoach.xcodeproj`，选择 `OfficeWorkoutCoach` 后运行。iPhone 真机安装需要配置自己的签名团队，详见 [健康桥指南](docs/healthkit-bridge.md)。
 
 ## 打开、更新、部署
 
-这是一个纯菜单栏 App(`LSUIElement = true`),启动后不会出现在 Dock 里,只会出现在 macOS 顶部菜单栏。
-如果替换了图标、资源或代码,正在运行的旧进程不会热更新,需要退出并重新打开。
+这是菜单栏 App（`LSUIElement = true`），启动后在屏幕顶部菜单栏出现，不显示 Dock 图标。更新前先保存或丢弃当前训练；关闭跟练窗口会暂停并在本次应用运行期间保留进度，退出后不恢复未保存进度。
 
-本机安装/更新推荐用脚本:
+本机安装或更新可使用：
 
 ```sh
-cd /Volumes/WorkSSD/codes/luma
 tools/install_app.sh
 ```
 
-脚本会构建 Release 版本,停止旧的 `OfficeWorkoutCoach` / `luma` 进程,复制到 `~/Applications/luma.app`,
-然后重新打开。想安装到系统 `/Applications` 时可用:
+脚本构建 Release、停止旧进程、复制到 `~/Applications/luma.app` 并打开。也可用 `DEST_DIR=/Applications tools/install_app.sh` 指定安装位置。打包脚本 `tools/package_app.sh` 和 `tools/package_dmg.sh` 在 `dist/` 生成分发文件。正式对外分发仍需 Apple Developer ID 签名和 notarization。
 
-```sh
-DEST_DIR=/Applications tools/install_app.sh
-```
+## 推荐规则
 
-给其他电脑部署时,先打包:
+优先考虑疼痛、明确休息和连续活动天数，然后考虑疲劳、酸痛、近期高强度、代理负荷、跑步恢复、力量间隔与肌群重叠。条件允许时才考虑周目标与 A/B 交替；连续两个已经结束的日历日没有活动时可推荐最低版。
 
-```sh
-cd /Volumes/WorkSSD/codes/luma
-tools/package_app.sh
-```
+- 新用户每周力量默认 3 次；已有设置保留。每日力量值表示训练日上限，不表示必须每天练力量。
+- 默认力量间隔 48 小时、同肌群间隔 36 小时、跑步或高强度缓冲 24 小时，连续活动达到 6 天可安排休息。
+- `时长 × 主观强度` 只用作软件调度信号，没有医学单位；未知强度保持为未知。恢复与进阶参数集中在 `RecommendationPolicy`、`ProgressionPolicy`，这些默认值不构成个体化处方。
+- 部分完成仍影响恢复，完整目标计数只接受完整完成。未来时间记录、重复身份和缺失值有独立边界测试。
+- 疼痛时暂停训练建议，不会仅因某个动作被命名为“恢复”就默认适合继续做。
 
-生成的 zip 在 `dist/` 下。把 zip 拷到另一台 Mac,解压后拖到 `Applications` 打开即可。
-也可以生成 DMG:
+## 跟练与进阶
 
-```sh
-tools/package_dmg.sh
-```
+今日建议、动作示意中的“开始计划”或计划入口都会打开同一个训练窗口。准备页显示实际估算时长；模板的分钟选项是训练量预算，用户按自己的节奏完成。
 
-DMG 里包含 `luma.app` 和 `Applications` 快捷方式,打开后把 app 拖进去即可。
-当前构建是本地签名/个人分发用途;如果 Gatekeeper 拦截,可右键 App 选择「打开」。
-若仍被 quarantine 标记拦住,在信任来源的前提下可运行:
+次数类动作需要填写实际完成次数；保持类动作记录计时秒数。左右侧是独立步骤。暂停时间不计入训练时长；系统睡眠会暂停；休息结束只进入下一组准备状态。提前结束会保留已完成的组，并在保存前确认主观强度、身体感受和备注。
 
-```sh
-xattr -dr com.apple.quarantine /Applications/luma.app
-```
+进阶判断使用最近两次训练的所有相关组，要求独立会话、足够近且间隔合理、每侧每组齐全、达到目录上限与自定义目标中的较高值、主观强度适中并使用同一已知重量。默认建议增加 0.5 kg 且不超过原重量 5%；器械步进不满足时保持原负荷。未完成或高强度可以提出减重，疼痛时提示暂停。任何建议都不自动写成完成记录。
 
-正式对外分发需要 Apple Developer ID 签名和 notarization。
+## 提醒
 
-## 推荐引擎规则(优先级从高到低)
+默认工作日为周一至周五 09:30–18:30，久坐触发阈值为 60 分钟；空闲达到 10 分钟视为一次休息。柔性提醒每天最多一次，强监督模式还可在工作时间窗内的周五/周六提醒周目标。
 
-1. 近 3 天有腰部不适且今天没动 → 腰背恢复(屏蔽硬拉 / 弓步)
-2. 今天已跑步 → 腰背恢复(不加腿部力量)
-3. 本周力量 ≥ 目标 → 跑步 / 恢复 / **休息**(连续训练 ≥ 6 天且周目标已达成时才出「休息」)
-4. 连续 ≥ 2 天完全无运动 → 8 分钟最低版
-5. 需要力量 → A / B 交替(上次 A→推 B,反之;无记录→A;中断 ≥ 7 天回到 A)
+标准/强监督久坐升级为通知后 2 分钟语音、通知后累计 10 分钟对话框。每次升级都重新检查当前环境。轻提醒模式不升级。会议或演示应用在前台、训练进行中、选择稍后、明确休息、关闭功能或离开工作时间窗时，延迟任务会被取消或抑制。
 
-规则在 `LogicPackage/Tests/OfficeWorkoutLogicTests/` 中逐条钉死。
-腰痛识别不只看结构化选项,也扫备注文本:中文按「腰 + 酸/痛/紧/疼/僵/麻」共现判断,
-英文按 `back` 与症状词共现判断,避免单出现 `back` 就误判。
+通知“开始”直接打开相应跟练；“稍后”暂停提醒 10 分钟；“今天休息”记录休息并停止当天训练催促。关闭提醒与时间窗均在设置中操作。
 
-## 跟练模式
+## 备份、恢复与同步
 
-点「今日建议」卡片右下角「开始」,或动作示意窗口里的「开始这个动作」,会打开跟练窗口:
-
-- 按 `PrescriptionLibrary` 把计划展开成逐组步骤,单侧动作自动拆左右(如反向弓步 3 组 × 每侧 → 6 步)
-- `ready → working → resting → done` 四态:计时类动作(平板 / 侧平板 / 拉伸)到时间自动进入休息,
-  次数类动作手动点「完成」
-- 组间休息倒计时可跳过、可加 15 秒,休息时长来自处方
-- 顶部显示「第 n / N 步」与整体进度条,可随时暂停或提前结束
-- 结束时一次性写入 `WorkoutSession` + 每条 `SetRecord`(次数 / 重量 / 时间),动作详情页下次会显示「上次做到多少」
-- 跟练期间自动置 `isWorkoutInProgress`,抑制久坐提醒,避免练到一半被弹窗打断
-
-
-## 提醒策略
-
-- **柔性提醒**:当天无记录且在工作时间窗内,最多 1 次/天。
-- **周目标提醒**(强监督模式):周五 / 周六若力量还差,提醒补练,最多 1 次/周。
-- **久坐提醒**:移植自 `tools/health-reminder/sedentary_reminder.sh` 的语义:
-  - 空闲检测用 `CGEventSource.secondsSinceLastEventType(.combinedSessionState, .null)` 替代 `ioreg HIDIdleTime`
-  - 工作窗口默认周一–周五 09:30–18:30(可在设置改)
-  - 触发阈值默认 45 分钟,可在设置里调
-  - 会议 / 演示应用(zoom / 腾讯会议 / Teams / FaceTime / Keynote / PowerPoint)前台时延迟 10 分钟
-  - 升级链:阈值到 → 通知;2 分钟未动 → 语音(`AVSpeechSynthesizer`);再 10 分钟 → 模态弹窗
-  - 由 App 内 60 秒 tick 驱动,不再依赖 launchd
-  - 点久坐通知 → 直接打开「腰背恢复」跟练;点柔性 / 周目标通知 → 打开最低版训练
-  - 跟练进行中自动抑制久坐提醒
-
-所有提醒都可在设置中关闭或调阈值。
-
-## 数据
-
-设置 → 「数据」可以导出全部记录为 CSV。有逐组记录的训练按组展开(每行一组),
-没有组次记录的按会话汇总;字段包含日期、类型、时长、动作、组号、次数 / 秒数、重量。
+- **JSON**：完整保存训练、逐组实际值、目标/提醒偏好、自定义计划、已导入健康数据及删除标记。导入先校验并显示预览，然后合并；重复文件不会重复新增，相同 ID 内容冲突会停止导入。目标偏好默认保留本机，明确勾选才使用备份值。
+- **CSV**：每组一行，分开保存 `reps`、`hold_seconds`、`side`、`weight_kg`；适合表格分析，不作为完整恢复格式。
+- **跨 Mac**：在各台 Mac 选择同一 iCloud Drive 或共享目录，手动“预览同步 → 确认合并”。各设备写入独立快照，删除标记随快照传播，目标差异保留本机。目录提供者负责文件传输；此版本没有自动 CloudKit 后台复制。
+- **健康数据**：必须由 iPhone 工具导出后再在 Mac 导入；授权空态不等于零，UUID 去重，睡眠重叠只计一次。数据文件和同步快照包含已导入的健康信息，只在用户选择的位置写入。
 
 ## 与现有 shell 久坐提醒器的关系
 
@@ -218,7 +138,6 @@ App 验证稳定后,可卸载它:`tools/health-reminder/uninstall.sh`,由 App �
 
 入口:菜单栏弹窗底部「动作示意」按钮 → 独立窗口(左侧按力量 A/B/恢复分组,右侧详情)。
 
-## 后续迭代
+## 后续范围
 
-- (可选)LLM 周总结、HealthKit 接入
-- (可选)训练历史曲线、重量进阶建议
+自动后台 CloudKit 同步、完整移动训练客户端、崩溃后的未保存训练恢复、LLM 周总结属于后续独立迭代。

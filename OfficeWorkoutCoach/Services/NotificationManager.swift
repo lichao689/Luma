@@ -49,6 +49,10 @@ final class NotificationManager: NSObject, ObservableObject {
     private var activeSince: Date?
     private var lastAlertAt: Date?
     private var snoozeUntil: Date?
+    private var escalationTask: Task<Void, Never>?
+    private let speech = AVSpeechSynthesizer()
+    private var restTodayAction: (() -> Void)?
+    private static let restDayKey = "reminder.restDay"
 
     private var tickTimer: Timer?
     /// Latest goal snapshot, used for re-evaluating on settings change.
@@ -56,7 +60,9 @@ final class NotificationManager: NSObject, ObservableObject {
 
     /// 跟练进行中时置 true,久坐提醒会跳过 —— 否则练到一半被弹窗打断。
     /// 由 `WorkoutStartView` 在开始/结束时设置。
-    var isWorkoutInProgress = false
+    var isWorkoutInProgress = false {
+        didSet { if isWorkoutInProgress { cancelEscalation(); activeSince = nil } }
+    }
 
     /// 唯一的共享实例。注入环境、通知回调、设置页刷新都走这一个 ——
     /// 之前这里同时存在 `shared` 和 `sharedInstance` 两个实例,导致通知
@@ -94,11 +100,12 @@ final class NotificationManager: NSObject, ObservableObject {
     // MARK: - Tick loop
 
     /// Start the periodic evaluation loop. Call once at launch.
-    func startMonitoring(goal: UserGoalValues, statsProvider: @escaping () -> WorkoutStats) {
-        stopMonitoring()
+    func startMonitoring(goal: UserGoalValues, statsProvider: @escaping () -> WorkoutStats, restToday: @escaping () -> Void = {}) {
         self.currentGoal = goal
         // Capture the provider so each tick reads fresh data.
         self.statsProvider = statsProvider
+        self.restTodayAction = restToday
+        guard tickTimer == nil else { return }
         let timer = Timer(timeInterval: 60, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.tick() }
         }
@@ -109,11 +116,14 @@ final class NotificationManager: NSObject, ObservableObject {
     func stopMonitoring() {
         tickTimer?.invalidate()
         tickTimer = nil
+        cancelEscalation()
     }
 
     /// Re-apply goal changes (called from Settings) without restarting the timer.
     func refresh(from goal: UserGoalValues) {
         self.currentGoal = goal
+        cancelEscalation()
+        activeSince = nil
     }
 
     private var statsProvider: (() -> WorkoutStats)?
@@ -122,6 +132,11 @@ final class NotificationManager: NSObject, ObservableObject {
         guard let stats = statsProvider?() else { return }
         let goal = currentGoal
         let now = Date()
+        guard notificationAllowed(now: now) else {
+            cancelEscalation()
+            activeSince = nil
+            return
+        }
 
         // Flexible + weekly reminders piggyback on the same tick.
         if goal.enableFlexibleReminder {
@@ -140,6 +155,7 @@ final class NotificationManager: NSObject, ObservableObject {
     private func evaluateFlexible(stats: WorkoutStats, goal: UserGoalValues, now: Date) {
         guard goal.reminderMode != .light else { return }
         guard !stats.hasActivityToday, withinWorkWindow(goal: goal, now: now) else { return }
+        guard ReminderPolicy.permitsTrainingNudge(RecommendationEngine.default.recommend(stats: stats, goal: goal, now: now)) else { return }
         // 只存"最后一次触发的日期",不再每天新建一个 key(旧写法一年会攒 365 个)。
         let today = dayKey(now)
         guard UserDefaults.standard.string(forKey: Self.lastFlexibleDayKey) != today else { return }
@@ -151,6 +167,8 @@ final class NotificationManager: NSObject, ObservableObject {
 
     private func evaluateWeekly(stats: WorkoutStats, goal: UserGoalValues, now: Date) {
         guard goal.reminderMode == .strict else { return }
+        guard withinWorkWindow(goal: goal, now: now) else { return }
+        guard ReminderPolicy.permitsTrainingNudge(RecommendationEngine.default.recommend(stats: stats, goal: goal, now: now)) else { return }
         let weekday = Calendar.current.component(.weekday, from: now)
         guard weekday == 6 || weekday == 7 else { return } // Fri(6)/Sat(7)
         guard stats.strengthCount < goal.weeklyStrengthTarget else { return }
@@ -183,6 +201,7 @@ final class NotificationManager: NSObject, ObservableObject {
         if idle >= restThreshold {
             // Real break: reset the active clock.
             activeSince = nil
+            cancelEscalation()
             return
         }
 
@@ -199,17 +218,17 @@ final class NotificationManager: NSObject, ObservableObject {
         lastAlertAt = now
 
         // Schedule escalation checks asynchronously on the main actor.
-        Task { @MainActor [weak self] in
-            try? await Task.sleep(nanoseconds: UInt64(self?.voiceEscalationAfter ?? 120) * 1_000_000_000)
-            guard let self else { return }
-            if self.systemIdleSeconds() < self.voiceEscalationAfter {
+        cancelEscalation()
+        guard goal.reminderMode != .light else { return }
+        escalationTask = Task { @MainActor [weak self] in
+            do {
+                try await Task.sleep(for: .seconds(120))
+                guard let self, !Task.isCancelled, self.escalationAllowed() else { return }
                 self.speakSedentary()
-            }
-            let remaining = (self.dialogEscalationAfter - self.voiceEscalationAfter)
-            try? await Task.sleep(nanoseconds: UInt64(remaining) * 1_000_000_000)
-            if self.systemIdleSeconds() < self.restThreshold {
+                try await Task.sleep(for: .seconds(480))
+                guard !Task.isCancelled, self.escalationAllowed() else { return }
                 self.presentSedentaryDialog()
-            }
+            } catch { return }
         }
     }
 
@@ -252,8 +271,8 @@ final class NotificationManager: NSObject, ObservableObject {
             string: String(localized: "voice.sedentary", defaultValue: "该站起来活动十分钟了。先离开屏幕,做护腰、力量和远眺。")
         )
         // Default voice; use Chinese locale if available for natural reading.
-        if let voice = AVSpeechSynthesisVoice(language: "zh-CN") { utterance.voice = voice }
-        AVSpeechSynthesizer().speak(utterance)
+        if let voice = AVSpeechSynthesisVoice(language: Locale.preferredLanguages.first ?? "en-US") { utterance.voice = voice }
+        speech.speak(utterance)
     }
 
     private func presentSedentaryDialog() {
@@ -287,12 +306,47 @@ final class NotificationManager: NSObject, ObservableObject {
     }
 
     private func withinWorkWindow(goal: UserGoalValues, now: Date) -> Bool {
-        let cal = Calendar.current
-        let weekday = cal.component(.weekday, from: now)
-        guard goal.workWeekdays.contains(weekday) else { return false }
-        let comps = cal.dateComponents([.hour, .minute], from: now)
-        let minutes = (comps.hour ?? 0) * 60 + (comps.minute ?? 0)
-        return minutes >= goal.workStartMinutes && minutes <= goal.workEndMinutes
+        ReminderPolicy.isWithinWorkWindow(goal: goal, now: now)
+    }
+
+    private func isRestDay(_ now: Date) -> Bool {
+        if UserDefaults.standard.string(forKey: Self.restDayKey) == dayKey(now) { return true }
+        if let stats = statsProvider?(), case .rest = RecommendationEngine.default.recommend(stats: stats, goal: currentGoal).action { return true }
+        return false
+    }
+
+    private func notificationAllowed(now: Date) -> Bool {
+        ReminderPolicy.canNotify(goal: currentGoal, now: now, workoutInProgress: isWorkoutInProgress,
+            meetingInProgress: isMeetingAppFrontmost(), restToday: isRestDay(now), snoozeUntil: snoozeUntil)
+    }
+
+    private func escalationAllowed() -> Bool {
+        guard tickTimer != nil else { return false }
+        return ReminderPolicy.canEscalate(goal: currentGoal, now: .now,
+            workoutInProgress: isWorkoutInProgress, meetingInProgress: isMeetingAppFrontmost(),
+            restToday: isRestDay(.now), snoozeUntil: snoozeUntil, idleSeconds: systemIdleSeconds())
+    }
+
+    private func cancelEscalation() {
+        escalationTask?.cancel()
+        escalationTask = nil
+        speech.stopSpeaking(at: .immediate)
+    }
+
+    func handleAction(_ identifier: String, category: String, now: Date = .now) {
+        cancelEscalation()
+        switch identifier {
+        case "START", UNNotificationDefaultActionIdentifier:
+            activeSince = nil
+            snoozeUntil = now.addingTimeInterval(600)
+            pendingDeepLink = category == Category.sedentary.rawValue ? .startRecovery : .startMinimal
+        case "LATER": snoozeUntil = now.addingTimeInterval(600)
+        case "REST_TODAY":
+            UserDefaults.standard.set(dayKey(now), forKey: Self.restDayKey)
+            activeSince = nil
+            restTodayAction?()
+        default: break
+        }
     }
 
     private func dayKey(_ date: Date) -> String {
@@ -304,7 +358,7 @@ final class NotificationManager: NSObject, ObservableObject {
     private func weekKey(_ date: Date) -> String {
         // A stable week identifier so the weekly nudge fires at most once/week.
         var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = TimeZone(identifier: "UTC")!
+        cal.timeZone = .current
         cal.firstWeekday = 2 // Monday
         let comps = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
         return "\(comps.yearForWeekOfYear ?? 0)-W\(comps.weekOfYear ?? 0)"
@@ -319,18 +373,10 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
     ) {
         // Reveal the app when the user taps a notification action, and
         // request a deep-link navigation for the START action.
-        let isStart = response.actionIdentifier == "START"
+        let identifier = response.actionIdentifier
         let category = response.notification.request.content.categoryIdentifier
         Task { @MainActor in
-            NSApplication.shared.activate(ignoringOtherApps: true)
-            if isStart {
-                // 久坐提醒说的是"做一组腰背恢复",就该跳到腰背恢复;
-                // 柔性提醒才是"8 分钟最低版"。之前一律跳最低版,语义对不上。
-                let link: NotificationManager.DeepLink =
-                    category == NotificationManager.Category.sedentary.rawValue
-                    ? .startRecovery : .startMinimal
-                NotificationManager.shared.pendingDeepLink = link
-            }
+            NotificationManager.shared.handleAction(identifier, category: category)
         }
         completionHandler()
     }

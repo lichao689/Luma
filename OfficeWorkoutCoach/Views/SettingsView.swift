@@ -29,13 +29,17 @@ private struct SettingsContent: View {
             windowTab.tabItem { Label(String(localized: "settings.window", defaultValue: "时间窗"), systemImage: "clock") }
             dataTab.tabItem { Label(String(localized: "settings.data", defaultValue: "数据"), systemImage: "externaldrive") }
         }
-        .frame(width: 440, height: 380)
+        .frame(width: 660, height: 600)
         .onAppear { if !loaded { values = UserGoalValues(store.fetchGoal()); loaded = true } }
+        .onChange(of: store.changeToken) { values = UserGoalValues(store.fetchGoal()) }
+        .alert(String(localized: "common.error", defaultValue: "未能保存"), isPresented: Binding(get: { store.lastError != nil }, set: { if !$0 { store.lastError = nil } })) {
+            Button(String(localized: "common.ok", defaultValue: "好")) { store.lastError = nil }
+        } message: { Text(store.lastError ?? "") }
     }
 
     @ViewBuilder private var goalsTab: some View {
         Form {
-            Section(String(localized: "settings.daily", defaultValue: "每日目标")) {
+            Section(String(localized: "settings.daily", defaultValue: "训练日目标")) {
                 Stepper(value: $values.dailyStrengthTarget, in: 0...3) {
                     labelRow(String(localized: "goal.strength", defaultValue: "力量"), values.dailyStrengthTarget)
                 }
@@ -43,6 +47,8 @@ private struct SettingsContent: View {
                     labelRow(String(localized: "goal.recovery", defaultValue: "恢复"), values.dailyRecoveryTarget)
                 }
             }
+            Text(String(localized: "settings.goals.explanation", defaultValue: "力量日目标是训练日的上限。周目标达标、恢复间隔不足或身体不适时，应用会安排恢复或休息。默认恢复规则为力量间隔 48 小时；它是软件调度规则。"))
+                .font(.caption).foregroundStyle(.secondary)
             Section(String(localized: "settings.weekly", defaultValue: "每周目标")) {
                 Stepper(value: $values.weeklyStrengthTarget, in: 0...14) {
                     labelRow(String(localized: "goal.strength", defaultValue: "力量"), values.weeklyStrengthTarget)
@@ -113,48 +119,13 @@ private struct SettingsContent: View {
         .onChange(of: values) { persist() }
     }
 
-    @ViewBuilder private var dataTab: some View {
-        Form {
-            Section {
-                Button {
-                    exportCSV()
-                } label: {
-                    Label(String(localized: "settings.export", defaultValue: "导出为 CSV…"),
-                          systemImage: "square.and.arrow.up")
-                }
-                Text(String(localized: "settings.export.hint",
-                            defaultValue: "导出全部训练记录,包含每组的次数与重量,可直接用 Excel 或 Numbers 打开。"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            } header: {
-                Text(String(localized: "settings.data", defaultValue: "数据"))
-            } footer: {
-                Text(String(localized: "settings.export.footer",
-                            defaultValue: "数据只存在本机,重装系统或换机前记得先导出一份。"))
-                    .font(.caption)
-            }
-        }
-        .formStyle(.grouped)
-    }
-
-    /// 导出 CSV。菜单栏 App 要先 activate,保存面板才会到前台。
-    private func exportCSV() {
-        NSApplication.shared.activate(ignoringOtherApps: true)
-        let panel = NSSavePanel()
-        let stamp = DateFormatter()
-        stamp.dateFormat = "yyyyMMdd-HHmm"
-        panel.nameFieldStringValue = "luma-\(stamp.string(from: .now)).csv"
-        panel.allowedContentTypes = [.commaSeparatedText]
-        panel.canCreateDirectories = true
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        try? store.exportCSV().write(to: url, atomically: true, encoding: .utf8)
-    }
+    private var dataTab: some View { DataManagementView() }
 
     // MARK: - Persistence
 
     private func persist() {        guard loaded else { return }
         store.updateGoal(values)
-        NotificationManager.shared.refresh(from: values)
+        NotificationManager.shared.refresh(from: UserGoalValues(store.fetchGoal()))
     }
 
     // MARK: - Helpers

@@ -11,7 +11,7 @@ import Foundation
 public enum BackPainMarkers {
     /// `bodyFeeling` 字段里表示腰背不适的值(小写比对)。
     public static let feelingValues: Set<String> = [
-        "backtight", "back_pain", "backpain", "lowerback"
+        "backtight", "back_pain", "backpain", "lowerback", "pain", "discomfort"
     ]
 
     /// 只用于扫描备注文本。这些是完整短语,能直接命中。
@@ -53,7 +53,7 @@ public enum BackPainMarkers {
 
 /// Immutable snapshot of recent activity. The recommendation engine consumes
 /// this so it stays a pure function with no I/O.
-public struct WorkoutStats: Equatable {
+public struct WorkoutStats: Equatable, Sendable {
     public let strengthCount: Int        // this week
     public let runCount: Int             // this week
     public let recoveryCount: Int        // this week
@@ -67,6 +67,11 @@ public struct WorkoutStats: Equatable {
     public let hasActivityToday: Bool
     public let hasRunToday: Bool
     public let recentBackPain: Bool
+    public let hasIntentionalRestToday: Bool
+    public let lastStrengthAt: Date?
+    /// Bounded recent detail, including partial sessions and rest-day feedback. This lets an injected
+    /// recommendation policy inspect actual movement, duration and known effort.
+    public let recentActivities: [SessionRecord]
 
     public init(
         strengthCount: Int,
@@ -80,7 +85,10 @@ public struct WorkoutStats: Equatable {
         consecutiveActiveDays: Int = 0,
         hasActivityToday: Bool,
         hasRunToday: Bool,
-        recentBackPain: Bool
+        recentBackPain: Bool,
+        hasIntentionalRestToday: Bool = false,
+        lastStrengthAt: Date? = nil,
+        recentActivities: [SessionRecord] = []
     ) {
         self.strengthCount = strengthCount
         self.runCount = runCount
@@ -94,6 +102,9 @@ public struct WorkoutStats: Equatable {
         self.hasActivityToday = hasActivityToday
         self.hasRunToday = hasRunToday
         self.recentBackPain = recentBackPain
+        self.hasIntentionalRestToday = hasIntentionalRestToday
+        self.lastStrengthAt = lastStrengthAt
+        self.recentActivities = recentActivities
     }
 }
 
@@ -108,11 +119,15 @@ public struct WorkoutStatsService {
     }
 
     public func stats(sessions: [SessionRecord]) -> WorkoutStats {
-        let active = sessions.filter { $0.type.isActivity }
+        // Imported future entries must not fill today's goals or suppress a
+        // recommendation. Repeated IDs likewise represent one logged activity.
+        var seen: Set<UUID> = []
+        let available = sessions.filter { $0.date <= now && seen.insert($0.id).inserted }
+        let active = available.filter { $0.type.isActivity }
         let strength = active.filter { $0.type.countsAsStrength }
 
         let weekStart = startOfWeek()
-        let thisWeek = active.filter { $0.date >= weekStart }
+        let thisWeek = active.filter { $0.date >= weekStart && $0.completion == .full }
         let strengthThisWeek = thisWeek.filter { $0.type.countsAsStrength }
         let runThisWeek = thisWeek.filter { $0.type.countsAsRun }
         let recoveryThisWeek = thisWeek.filter { $0.type.countsAsRecovery }
@@ -124,11 +139,11 @@ public struct WorkoutStatsService {
 
         let todayStart = calendar.startOfDay(for: now)
         let todays = active.filter { $0.date >= todayStart }
-        let strengthToday = todays.filter { $0.type.countsAsStrength }
-        let recoveryToday = todays.filter { $0.type.countsAsRecovery }
+        let strengthToday = todays.filter { $0.type.countsAsStrength && $0.completion == .full }
+        let recoveryToday = todays.filter { $0.type.countsAsRecovery && $0.completion == .full }
 
         let recentWindow = calendar.date(byAdding: .day, value: -3, to: now) ?? now
-        let recentBackPain = sessions.contains { session in
+        let recentBackPain = available.contains { session in
             guard session.date >= recentWindow else { return false }
             return BackPainMarkers.indicatesBackPain(feeling: session.bodyFeeling)
                 || BackPainMarkers.indicatesBackPain(note: session.note)
@@ -146,14 +161,17 @@ public struct WorkoutStatsService {
             consecutiveActiveDays: consecutiveActiveDays(active: active),
             hasActivityToday: !todays.isEmpty,
             hasRunToday: todays.contains { $0.type.countsAsRun },
-            recentBackPain: recentBackPain
+            recentBackPain: recentBackPain,
+            hasIntentionalRestToday: available.contains { $0.date >= todayStart && $0.type == .rest },
+            lastStrengthAt: lastStrength?.date,
+            recentActivities: recentSessions(available, days: 7)
         )
     }
 
     /// Sessions from the last `days` days, newest first.
     public func recentSessions(_ sessions: [SessionRecord], days: Int = 7) -> [SessionRecord] {
         let cutoff = calendar.date(byAdding: .day, value: -days, to: now) ?? now
-        return sessions.filter { $0.date >= cutoff }.sorted { $0.date > $1.date }
+        return sessions.filter { $0.date >= cutoff && $0.date <= now }.sorted { $0.date > $1.date }
     }
 
     // MARK: - Private helpers
@@ -169,7 +187,10 @@ public struct WorkoutStatsService {
         let dayBuckets = Dictionary(grouping: active) { calendar.startOfDay(for: $0.date) }
         var cursor = calendar.startOfDay(for: now)
         if dayBuckets[cursor] != nil { return 0 }
-        var streak = 1
+        // Today is still available for activity. Count only completed inactive
+        // days, otherwise one deliberate rest day would trigger the "2-day gap"
+        // rule before a normally spaced strength session.
+        var streak = 0
         for _ in 0..<60 {
             cursor = calendar.date(byAdding: .day, value: -1, to: cursor) ?? cursor
             if dayBuckets[cursor] != nil { break }

@@ -1,496 +1,236 @@
 import SwiftUI
-import Combine
 import AppKit
 import OfficeWorkoutLogic
 
-/// 跟练模式:按处方逐个动作、逐组推进,自带计时和组间休息。
-///
-/// 这一步补的是原来断掉的环节 —— 之前点「开始」直接跳到记录表单,还没练
-/// 就要填完成度和强度。现在开始训练是一个真实的执行流程,练完自动落库。
-///
-/// 独立窗口(通过 `openWindow(id: "workout", value:)` 打开),因为 popover
-/// 只有 320pt 宽,放不下媒体和计时。
 struct WorkoutStartView: View {
-    /// `WorkoutType.rawValue`。
-    let planRaw: String
-
-    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var store: WorkoutStore
-    @EnvironmentObject private var notifier: NotificationManager
-
-    private enum Phase: Equatable {
-        case ready      // 等待开始
-        case working    // 本组进行中
-        case resting    // 组间休息
-        case done       // 全部完成
-    }
-
-    @State private var steps: [WorkoutStep] = []
-    @State private var index = 0
-    @State private var phase: Phase = .ready
-    @State private var elapsed = 0
-    @State private var restRemaining = 0
-    @State private var completed: [CompletedSet] = []
-    @State private var startedAt = Date()
-    @State private var weightText = ""
-    @State private var showQuitConfirm = false
-
-    private let ticker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
-    private var plan: WorkoutType? { WorkoutType(rawValue: planRaw) }
-    private var currentStep: WorkoutStep? {
-        steps.indices.contains(index) ? steps[index] : nil
-    }
+    @EnvironmentObject private var workout: WorkoutCoordinator
+    @Environment(\.dismiss) private var dismiss
+    @State private var now = Date()
+    @State private var confirmEnd = false
+    @State private var confirmDiscard = false
+    @State private var history: [ExercisePerformance] = []
+    @State private var lastPerformance: LastPerformance?
 
     var body: some View {
         VStack(spacing: 0) {
-            topBar
-            Divider()
-            if phase == .done {
-                doneView
-            } else if let step = currentStep {
-                HStack(alignment: .top, spacing: 0) {
-                    mediaPane(step)
-                    Divider()
-                    controlPane(step)
-                }
-            } else {
-                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        }
-        .frame(minWidth: 760, minHeight: 540)
-        .background(.background)
-        .onAppear {
-            steps = Self.buildSteps(for: plan)
-            startedAt = .now
-            notifier.isWorkoutInProgress = true
-        }
-        .onDisappear {
-            notifier.isWorkoutInProgress = false
-        }
-        .onReceive(ticker) { _ in tick() }
-        .confirmationDialog(
-            String(localized: "workout.quit.title", defaultValue: "结束这次训练?"),
-            isPresented: $showQuitConfirm
-        ) {
-            Button(String(localized: "workout.quit.confirm", defaultValue: "结束并放弃"), role: .destructive) {
-                notifier.isWorkoutInProgress = false
-                dismiss()
-            }
-            Button(String(localized: "workout.quit.cancel", defaultValue: "继续练"), role: .cancel) {}
-        } message: {
-            Text(String(localized: "workout.quit.message", defaultValue: "已完成的组不会被记录。"))
-        }
-    }
-
-    // MARK: - 顶部
-
-    private var topBar: some View {
-        HStack(spacing: 12) {
-            Image(systemName: plan?.systemImage ?? "figure.strengthtraining.traditional")
-                .font(.title3)
-                .foregroundStyle(.tint)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(plan?.localizedName ?? "")
-                    .font(.headline)
-                Text(progressText)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-            }
-            Spacer()
-            Button {
-                if phase == .done { dismiss() } else { showQuitConfirm = true }
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.borderless)
-            .help(String(localized: "workout.close", defaultValue: "结束训练"))
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-    }
-
-    private var progressText: String {
-        guard !steps.isEmpty else { return "" }
-        let done = completed.count
-        let total = steps.count
-        let shown = done + (phase == .done ? 0 : 1)
-        let format = NSLocalizedString("workout.progress", value: "第 %1$d / %2$d 组", comment: "")
-        return String(format: format, shown, total)
-    }
-
-    // MARK: - 左:媒体
-
-    @ViewBuilder
-    private func mediaPane(_ step: WorkoutStep) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ExerciseMediaView(exercise: step.exercise)
-                .frame(maxWidth: .infinity, maxHeight: 300)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            VStack(alignment: .leading, spacing: 6) {
-                Text(step.exercise.localizedName)
-                    .font(.title2.weight(.semibold))
-                HStack(spacing: 8) {
-                    tag(doseText(step))
-                    if let side = step.side {
-                        tag(side == .left
-                            ? String(localized: "workout.side.left", defaultValue: "左侧")
-                            : String(localized: "workout.side.right", defaultValue: "右侧"))
+            if let run = workout.execution {
+                header(run)
+                Divider()
+                if workout.saved { savedView(run) }
+                else if run.phase == .finished { reviewView(run) }
+                else if let step = run.currentStep, let exercise = ExerciseLibrary.exercise(id: step.exerciseID) {
+                    HStack(alignment: .top, spacing: 0) {
+                        mediaPane(exercise: exercise, step: step)
+                        Divider()
+                        controlPane(run: run, step: step)
                     }
                 }
-            }
-            Spacer(minLength: 0)
+            } else { TrainingPlanEditorView() }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func tag(_ text: String) -> some View {
-        Text(text)
-            .font(.caption.weight(.medium))
-            .padding(.horizontal, 8).padding(.vertical, 3)
-            .background(.secondary.opacity(0.12), in: Capsule())
-    }
-
-    // MARK: - 右:计时与控制
-
-    @ViewBuilder
-    private func controlPane(_ step: WorkoutStep) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            timerBlock(step)
-            if let last = store.lastPerformance(exerciseID: step.exercise.id) {
-                lastPerformanceRow(last, prescription: step.prescription)
-            }
-            focusRow(step)
-            weightRow(step)
-            Spacer(minLength: 0)
-            actionButtons(step)
+        .frame(minWidth: 860, minHeight: 600)
+        .onReceive(Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()) { date in
+            now = date
+            workout.tick(at: date)
         }
-        .padding(20)
-        .frame(width: 340)
-    }
-
-    @ViewBuilder
-    private func timerBlock(_ step: WorkoutStep) -> some View {
-        VStack(spacing: 6) {
-            switch phase {
-            case .resting:
-                Text(String(localized: "workout.resting", defaultValue: "组间休息"))
-                    .font(.caption).foregroundStyle(.secondary)
-                Text(timeString(restRemaining))
-                    .font(.system(size: 52, weight: .semibold, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundStyle(.tint)
-            case .working:
-                Text(step.prescription.isHold
-                     ? String(localized: "workout.holding", defaultValue: "保持")
-                     : String(localized: "workout.working", defaultValue: "进行中"))
-                    .font(.caption).foregroundStyle(.secondary)
-                Text(timeString(step.prescription.isHold
-                                ? max(0, step.prescription.repsHigh - elapsed)
-                                : elapsed))
-                    .font(.system(size: 52, weight: .semibold, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundStyle(.primary)
-            default:
-                Text(String(localized: "workout.ready", defaultValue: "准备好了就开始"))
-                    .font(.caption).foregroundStyle(.secondary)
-                Text(doseText(step))
-                    .font(.system(size: 40, weight: .semibold, design: .rounded))
-                    .monospacedDigit()
-            }
+        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.willSleepNotification)) { _ in workout.pause() }
+        .onDisappear { workout.pause() }
+        .onAppear { reloadHistory() }
+        .onChange(of: workout.execution?.currentStep?.id) { reloadHistory() }
+        .onChange(of: store.changeToken) { reloadHistory() }
+        .alert(String(localized: "common.error", defaultValue: "未能完成操作"), isPresented: Binding(get: { workout.errorMessage != nil }, set: { if !$0 { workout.errorMessage = nil } })) {
+            Button(String(localized: "common.ok", defaultValue: "好")) { workout.errorMessage = nil }
+        } message: { Text(workout.errorMessage ?? "") }
+        .confirmationDialog(String(localized: "workout.end.confirm", defaultValue: "结束本次训练并查看已完成的组？"), isPresented: $confirmEnd) {
+            Button(String(localized: "workout.end.review", defaultValue: "结束并查看记录")) { workout.finishEarly() }
+            Button(String(localized: "common.cancel", defaultValue: "取消"), role: .cancel) { }
+        } message: {
+            Text(String(localized: "workout.end.hint", defaultValue: "已完成的组可以保存为部分完成；未完成的当前组不会自动记入。"))
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+        .confirmationDialog(String(localized: "workout.discard.confirm", defaultValue: "丢弃这次尚未保存的训练？"), isPresented: $confirmDiscard) {
+            Button(String(localized: "workout.discard", defaultValue: "丢弃训练"), role: .destructive) { workout.reset() }
+        }
     }
 
-    @ViewBuilder
-    private func lastPerformanceRow(_ last: LastPerformance, prescription: Prescription) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: "clock.arrow.circlepath")
-                .foregroundStyle(.secondary)
-            Text(String(localized: "workout.lastTime", defaultValue: "上次"))
-                .font(.caption).foregroundStyle(.secondary)
-            Text(lastText(last, prescription: prescription))
-                .font(.caption.monospacedDigit())
+    private func header(_ run: WorkoutExecution) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(run.plan.name).font(.headline)
+                Text(String(format: NSLocalizedString("workout.progress.actual", value: "已完成 %1$d / %2$d 组", comment: ""), run.completedSets.count, run.steps.count))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Spacer()
-        }
+            Text(clock(run.durationSeconds(at: now))).monospacedDigit().foregroundStyle(.secondary)
+            if run.phase != .finished {
+                if run.phase == .paused {
+                    Button(String(localized: "workout.resume", defaultValue: "继续")) { workout.resume() }
+                } else {
+                    Button(String(localized: "workout.pause", defaultValue: "暂停")) { workout.pause() }
+                }
+                Button(String(localized: "workout.end", defaultValue: "结束训练")) { confirmEnd = true }
+            }
+        }.padding(16)
     }
 
-    private func lastText(_ last: LastPerformance, prescription: Prescription) -> String {
-        let unit = prescription.isHold
-            ? String(localized: "workout.unit.seconds", defaultValue: "秒")
-            : String(localized: "workout.unit.reps", defaultValue: "次")
-        if let weight = last.weightKg {
-            return String(format: "%.1f kg × %d %@", weight, last.reps, unit)
-        }
-        return "\(last.reps) \(unit)"
+    private func mediaPane(exercise: Exercise, step: ExecutionStep) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                ExerciseMediaView(exercise: exercise)
+                    .frame(height: 270).clipShape(RoundedRectangle(cornerRadius: 12))
+                Text(exercise.localizedName).font(.title2.bold())
+                HStack {
+                    Text(String(format: NSLocalizedString("workout.step.target", value: "第 %1$d 组 · 目标 %2$d", comment: ""), step.setIndex, step.exercise.reps))
+                    Text(step.exercise.isHold ? String(localized: "workout.unit.seconds", defaultValue: "秒") : String(localized: "workout.unit.reps", defaultValue: "次"))
+                    if let side = step.side {
+                        Text(side == .left ? String(localized: "workout.side.left", defaultValue: "左侧") : String(localized: "workout.side.right", defaultValue: "右侧"))
+                    }
+                }.font(.subheadline).foregroundStyle(.secondary)
+                ForEach(exercise.localizedCues, id: \.self) { Text($0).font(.callout) }
+                ForEach(exercise.localizedStopConditions, id: \.self) { Text($0).font(.caption).foregroundStyle(.orange) }
+            }.padding(20)
+        }.frame(maxWidth: .infinity)
     }
 
-    @ViewBuilder
-    private func focusRow(_ step: WorkoutStep) -> some View {
-        if let focus = step.exercise.localizedVisualFocus.first {
-            HStack(alignment: .top, spacing: 6) {
-                Image(systemName: "scope").foregroundStyle(.blue).font(.caption)
-                Text(focus)
+    private func controlPane(run: WorkoutExecution, step: ExecutionStep) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(spacing: 8) {
+                    Text(phaseName(run.phase)).font(.caption).foregroundStyle(.secondary)
+                    Text(timerText(run, step: step))
+                        .font(.system(size: 48, weight: .semibold, design: .rounded)).monospacedDigit()
+                }
+                .frame(maxWidth: .infinity).padding(.vertical, 20)
+                .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                if let last = lastPerformance {
+                    HStack {
+                        Image(systemName: "clock.arrow.circlepath")
+                        Text(String(localized: "workout.lastTime", defaultValue: "上次"))
+                        Text(lastValue(last, isHold: step.exercise.isHold))
+                    }.font(.caption).foregroundStyle(.secondary)
+                }
+                progressionView(step)
+                if !step.exercise.isHold {
+                    TextField(String(localized: "workout.actualReps", defaultValue: "本组实际完成次数"), text: $workout.repetitionsText)
+                        .textFieldStyle(.roundedBorder).disabled(run.phase != .working)
+                    TextField(String(localized: "workout.weight.placeholder", defaultValue: "重量 kg（可留空）"), text: $workout.weightText)
+                        .textFieldStyle(.roundedBorder).disabled(run.phase != .ready && run.phase != .working)
+                    Text(String(localized: "workout.actual.hint", defaultValue: "填写实际完成值。目标次数仅作参考，不会自动写入记录。"))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                actionButtons(run: run, step: step)
+                if run.phase == .paused {
+                    Text(String(localized: "workout.pause.hint", defaultValue: "计时已暂停。关闭窗口后，本次进度会保留到应用退出。"))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }.padding(20)
+        }.frame(width: 340)
+    }
+
+    @ViewBuilder private func progressionView(_ step: ExecutionStep) -> some View {
+        let suggestion = TrainingProgression.suggestion(for: step.exercise, history: history)
+        VStack(alignment: .leading, spacing: 6) {
+            Text(NSLocalizedString(suggestion.reasonKey, comment: "")).font(.caption).foregroundStyle(.secondary)
+            if suggestion.requiresAcceptance, let weight = suggestion.weightKg {
+                Button(String(format: NSLocalizedString("progress.acceptWeight", value: "本组使用建议重量 %.2f kg", comment: ""), weight)) {
+                    workout.weightText = String(format: "%.2f", weight)
+                }
+                .disabled(workout.execution?.phase != .ready && workout.execution?.phase != .working)
+            }
+            if suggestion.requiresAcceptance, suggestion.weightKg == nil, let reps = suggestion.targetReps {
+                Text(String(format: NSLocalizedString("progress.repsSuggestion", value: "本次可把目标调整为 %d 次；完成后仍填写实际次数。", comment: ""), reps))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
 
-    @ViewBuilder
-    private func weightRow(_ step: WorkoutStep) -> some View {
-        if !step.prescription.isHold {
-            HStack(spacing: 8) {
-                Text(String(localized: "workout.weight", defaultValue: "重量"))
-                    .font(.caption).foregroundStyle(.secondary)
-                TextField(String(localized: "workout.weight.placeholder", defaultValue: "kg(可留空)"),
-                          text: $weightText)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 100)
-                Text(String(localized: "workout.weight.hint", defaultValue: "留空表示只记次数"))
-                    .font(.caption2).foregroundStyle(.tertiary)
-                Spacer()
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func actionButtons(_ step: WorkoutStep) -> some View {
-        switch phase {
+    @ViewBuilder private func actionButtons(run: WorkoutExecution, step: ExecutionStep) -> some View {
+        switch run.phase {
         case .ready:
-            Button {
-                beginWork(step)
-            } label: {
-                Text(String(localized: "workout.startSet", defaultValue: "开始本组"))
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .keyboardShortcut(.defaultAction)
-
+            Button(String(localized: "workout.startSet", defaultValue: "开始本组")) { workout.startSet() }
+                .buttonStyle(.borderedProminent).controlSize(.large)
         case .working:
-            Button {
-                completeCurrentSet(step, reps: step.prescription.isHold ? elapsed : step.prescription.repsHigh)
-            } label: {
-                Text(String(localized: "workout.finishSet", defaultValue: "完成本组"))
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .keyboardShortcut(.defaultAction)
-
+            Button(step.exercise.isHold ? String(localized: "workout.hold.stop", defaultValue: "按实际秒数结束本组") : String(localized: "workout.finishSet", defaultValue: "完成本组")) { workout.completeSet() }
+                .buttonStyle(.borderedProminent).controlSize(.large)
+                .disabled(step.exercise.isHold ? run.elapsedSeconds(at: now) < 1 : workout.repetitionsText.isEmpty)
         case .resting:
-            HStack(spacing: 8) {
-                Button {
-                    advance()
-                } label: {
-                    Text(String(localized: "workout.skipRest", defaultValue: "跳过休息"))
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-
-                Button {
-                    restRemaining += 30
-                } label: {
-                    Text(String(localized: "workout.addRest", defaultValue: "+30 秒"))
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
+            HStack {
+                Button(String(localized: "workout.skipRest", defaultValue: "跳过休息")) { workout.skipRest() }
+                Button(String(localized: "workout.addRest", defaultValue: "+30 秒")) { workout.addRest() }
             }
-
-        case .done:
-            EmptyView()
+        case .paused:
+            Button(String(localized: "workout.resume", defaultValue: "继续")) { workout.resume() }
+                .buttonStyle(.borderedProminent).controlSize(.large)
+        case .finished: EmptyView()
         }
     }
 
-    // MARK: - 完成页
-
-    private var doneView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 52))
-                .foregroundStyle(.green)
-            Text(String(localized: "workout.done.title", defaultValue: "训练完成"))
-                .font(.title2.weight(.semibold))
-            Text(doneDetail)
-                .font(.callout)
+    private func reviewView(_ run: WorkoutExecution) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(run.completion == .full ? String(localized: "workout.review.full", defaultValue: "已完成全部训练组") : String(localized: "workout.review.partial", defaultValue: "本次将保存为部分完成"))
+                .font(.title2.bold())
+            Text(String(format: NSLocalizedString("workout.review.sets", value: "%d 组实际记录；确认感受后保存。", comment: ""), run.completedSets.count))
                 .foregroundStyle(.secondary)
-            Button {
-                dismiss()
-            } label: {
-                Text(String(localized: "workout.done.close", defaultValue: "完成"))
-                    .frame(width: 160)
+            Form {
+                Picker(String(localized: "field.intensity", defaultValue: "主观强度"), selection: $workout.intensity) {
+                    ForEach(1...5, id: \.self) { Text("\($0)").tag($0) }
+                }
+                Picker(String(localized: "field.feeling", defaultValue: "身体感觉"), selection: $workout.bodyFeeling) {
+                    ForEach(BodyFeeling.allCases) { Text($0.localizedName).tag($0) }
+                }
+                TextField(String(localized: "field.notes", defaultValue: "备注（可选）"), text: $workout.notes, axis: .vertical)
+            }.formStyle(.grouped)
+            HStack {
+                Button(String(localized: "workout.discard", defaultValue: "丢弃训练"), role: .destructive) { confirmDiscard = true }
+                Spacer()
+                Button(String(localized: "workout.save", defaultValue: "保存本次训练")) { workout.save(using: store) }
+                    .buttonStyle(.borderedProminent).disabled(run.completedSets.isEmpty)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .keyboardShortcut(.defaultAction)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if run.completedSets.isEmpty {
+                Text(String(localized: "workout.empty", defaultValue: "还没有完成的组，未生成训练记录。"))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }.padding(28).frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // MARK: - 状态机
-
-    private func beginWork(_ step: WorkoutStep) {
-        elapsed = 0
-        phase = .working
-        if weightText.isEmpty, let last = store.lastPerformance(exerciseID: step.exercise.id),
-           let weight = last.weightKg {
-            // 沿用上次重量作为默认值,减少重复输入。
-            weightText = String(format: "%.1f", weight)
-        }
+    private func savedView(_ run: WorkoutExecution) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "checkmark.circle.fill").font(.system(size: 50)).foregroundStyle(.green)
+            Text(String(localized: "workout.saved", defaultValue: "训练已保存")).font(.title2.bold())
+            Text(String(format: NSLocalizedString("workout.progress.actual", value: "已完成 %1$d / %2$d 组", comment: ""), run.completedSets.count, run.steps.count))
+            HStack {
+                Button(String(localized: "workout.new", defaultValue: "准备下次计划")) { workout.reset() }
+                Button(String(localized: "workout.done.close", defaultValue: "完成")) { dismiss() }.buttonStyle(.borderedProminent)
+            }
+        }.frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func completeCurrentSet(_ step: WorkoutStep, reps: Int) {
-        completed.append(
-            CompletedSet(
-                exerciseID: step.exercise.id,
-                setIndex: step.setIndex,
-                reps: max(1, reps),
-                weightKg: parsedWeight
-            )
-        )
-        let isLastStep = index >= steps.count - 1
-        if isLastStep {
-            finish()
-            return
-        }
-        if step.prescription.restSeconds > 0 {
-            restRemaining = step.prescription.restSeconds
-            phase = .resting
-        } else {
-            advance()
+    private func timerText(_ run: WorkoutExecution, step: ExecutionStep) -> String {
+        switch run.phase {
+        case .resting: return clock(run.restRemaining(at: now))
+        case .working: return clock(step.exercise.isHold ? max(0, step.exercise.reps - run.elapsedSeconds(at: now)) : run.elapsedSeconds(at: now))
+        case .ready: return "\(step.exercise.reps)"
+        case .paused: return "—"
+        case .finished: return clock(run.durationSeconds(at: now))
         }
     }
-
-    private func advance() {
-        index = min(index + 1, max(0, steps.count - 1))
-        elapsed = 0
-        phase = .ready
-    }
-
-    private func tick() {
+    private func phaseName(_ phase: WorkoutExecution.Phase) -> String {
         switch phase {
-        case .working:
-            elapsed += 1
-            if let step = currentStep, step.prescription.isHold,
-               elapsed >= step.prescription.repsHigh {
-                completeCurrentSet(step, reps: step.prescription.repsHigh)
-            }
-        case .resting:
-            restRemaining -= 1
-            if restRemaining <= 0 { advance() }
-        default:
-            break
+        case .ready: return String(localized: "workout.ready", defaultValue: "准备好了就开始")
+        case .working: return String(localized: "workout.working", defaultValue: "进行中")
+        case .resting: return String(localized: "workout.resting", defaultValue: "组间休息")
+        case .paused: return String(localized: "workout.paused", defaultValue: "已暂停")
+        case .finished: return String(localized: "workout.review", defaultValue: "待保存")
         }
     }
-
-    private func finish() {
-        guard let plan else { dismiss(); return }
-        let id = store.log(
-            type: plan,
-            planCode: planRaw,
-            durationMinutes: durationMinutes,
-            completion: .full,
-            intensity: 3,
-            bodyFeeling: nil,
-            notes: nil
-        )
-        for set in completed {
-            store.recordSet(
-                sessionID: id,
-                exerciseID: set.exerciseID,
-                setIndex: set.setIndex,
-                reps: set.reps,
-                weightKg: set.weightKg
-            )
-        }
-        notifier.isWorkoutInProgress = false
-        phase = .done
+    private func lastValue(_ last: LastPerformance, isHold: Bool) -> String {
+        let unit = isHold ? String(localized: "workout.unit.seconds", defaultValue: "秒") : String(localized: "workout.unit.reps", defaultValue: "次")
+        let weight = last.weightKg.map { String(format: "%.1f kg × ", $0) } ?? ""
+        return "\(weight)\(last.reps) \(unit)"
     }
-
-    // MARK: - 派生
-
-    private var parsedWeight: Double? {
-        let trimmed = weightText.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return nil }
-        return Double(trimmed.replacingOccurrences(of: ",", with: "."))
+    private func reloadHistory() {
+        guard let id = workout.execution?.currentStep?.exerciseID else { history = []; lastPerformance = nil; return }
+        history = store.exercisePerformances(exerciseID: id)
+        lastPerformance = store.lastPerformance(exerciseID: id)
     }
-
-    private var durationMinutes: Int {
-        max(1, Int(Date().timeIntervalSince(startedAt) / 60))
-    }
-
-    private var doneDetail: String {
-        let format = NSLocalizedString(
-            "workout.done.detail",
-            value: "共 %1$d 组 · %2$d 分钟,已记入今天。",
-            comment: ""
-        )
-        return String(format: format, completed.count, durationMinutes)
-    }
-
-    private func doseText(_ step: WorkoutStep) -> String {
-        let rx = step.prescription
-        let key = rx.isHold ? "workout.dose.hold" : "workout.dose.reps"
-        let fallback = rx.isHold ? "%1$d 组 × %2$@ 秒" : "%1$d 组 × %2$@ 次"
-        let format = NSLocalizedString(key, value: fallback, comment: "")
-        return String(format: format, rx.sets, rx.repRangeText)
-    }
-
-    private func timeString(_ seconds: Int) -> String {
-        String(format: "%d:%02d", max(0, seconds) / 60, max(0, seconds) % 60)
-    }
-
-    // MARK: - 步骤构建
-
-    /// 把计划展开成"逐组"的执行序列。
-    ///
-    /// 展开规则(单侧拆左右、组数与处方一致)在逻辑层的 `WorkoutPlanExpander`
-    /// 里,有单测覆盖;这里只负责把 id 换成具体的 `Exercise` 和 `Prescription`。
-    static func buildSteps(for plan: WorkoutType?) -> [WorkoutStep] {
-        guard let plan else { return [] }
-        return WorkoutPlanExpander.steps(for: plan).compactMap { step in
-            guard let exercise = ExerciseLibrary.exercise(id: step.exerciseID) else { return nil }
-            let rx = plan == .minimal
-                ? PrescriptionLibrary.minimalPrescription(exerciseID: step.exerciseID)
-                : PrescriptionLibrary.prescription(for: plan, exerciseID: step.exerciseID)
-
-            let side: WorkoutStep.Side?
-            switch step.side {
-            case .left:  side = .left
-            case .right: side = .right
-            case nil:    side = nil
-            }
-
-            return WorkoutStep(exercise: exercise, prescription: rx, setIndex: step.setIndex, side: side)
-        }
-    }
-}
-
-// MARK: - 模型
-
-struct WorkoutStep: Identifiable {
-    enum Side { case left, right }
-
-    let id = UUID()
-    let exercise: Exercise
-    let prescription: Prescription
-    let setIndex: Int
-    let side: Side?
-}
-
-struct CompletedSet {
-    let exerciseID: String
-    let setIndex: Int
-    let reps: Int
-    let weightKg: Double?
+    private func clock(_ seconds: Int) -> String { String(format: "%d:%02d", max(0, seconds) / 60, max(0, seconds) % 60) }
 }

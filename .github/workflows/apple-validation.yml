@@ -1,0 +1,57 @@
+name: Luma validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: luma-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test portable logic
+        run: swift test --package-path LogicPackage
+      - name: Build app and test persistence
+        run: >-
+          xcodebuild test
+          -project OfficeWorkoutCoach.xcodeproj
+          -scheme OfficeWorkoutCoach
+          -destination 'platform=macOS'
+          -derivedDataPath build/macOS
+          -resultBundlePath build/macOS-tests.xcresult
+          CODE_SIGNING_ALLOWED=NO
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macOS-test-results
+          path: build/macOS-tests.xcresult
+          if-no-files-found: ignore
+
+  ios-bridge:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Compile iPhone companion for Simulator
+        run: >-
+          xcodebuild build
+          -project HealthBridgeIOS/LumaHealthBridge.xcodeproj
+          -scheme LumaHealthBridge
+          -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath build/iOS
+          CODE_SIGNING_ALLOWED=NO
