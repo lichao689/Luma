@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import OfficeWorkoutLogic
 
 /// 一次训练里某一组的实际完成情况。
 ///
@@ -21,6 +22,9 @@ final class SetRecord {
     /// 重量(公斤)。办公室哑铃可以留空,表示只记次数。
     var weightKg: Double?
     var recordedAt: Date
+    /// Nil on pre-upgrade records; infer units only from known hold exercises.
+    var isHold: Bool? = nil
+    var sideRaw: String? = nil
 
     init(
         id: UUID = UUID(),
@@ -29,7 +33,9 @@ final class SetRecord {
         setIndex: Int,
         reps: Int,
         weightKg: Double? = nil,
-        recordedAt: Date = .now
+        recordedAt: Date = .now,
+        isHold: Bool? = nil,
+        sideRaw: String? = nil
     ) {
         self.id = id
         self.sessionID = sessionID
@@ -38,6 +44,17 @@ final class SetRecord {
         self.reps = reps
         self.weightKg = weightKg
         self.recordedAt = recordedAt
+        self.isHold = isHold
+        self.sideRaw = sideRaw
+    }
+
+    var usesSeconds: Bool {
+        isHold ?? ["plank", "sidePlank", "hipFlexorStretch"].contains(exerciseID)
+    }
+
+    var backupValue: BackupSet {
+        BackupSet(id: id, sessionID: sessionID, exerciseID: exerciseID, setIndex: setIndex,
+                  reps: reps, isHold: usesSeconds, side: sideRaw, weightKg: weightKg, recordedAt: recordedAt)
     }
 }
 

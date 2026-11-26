@@ -31,6 +31,19 @@
 		AA100001 /* AppQuitAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100001 /* AppQuitAction.swift */; };
 		AA100002 /* AppQuitActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100002 /* AppQuitActionTests.swift */; };
 		AA100003 /* AppQuitAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100001 /* AppQuitAction.swift */; };
+		5282988039A77FC4B0F93582 /* DataArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A74E06E738CC184327BEC94; };
+		1C229A4CD717E3013BA961FF /* WorkoutCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E918FD1F11E3659A0130CF2; };
+		69E722A3B370BDEBA672C996 /* TrainingPlanEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B07394AF139FFA4D8F2E03F0; };
+		D8E346FAD976A7F1D647AA82 /* WorkoutLaunchModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC0C730942599E8FD5070004; };
+		64867FA2050384EEE202BF37 /* DataManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EC1052EEE8074125E5F5644; };
+		D14941E142D3E3F4DA5AFCF6 /* Persistence source in Tests */ = {isa = PBXBuildFile; fileRef = AB000003; };
+		7F326A6546F3375BC2164BAD /* Persistence source in Tests */ = {isa = PBXBuildFile; fileRef = AB000004; };
+		1A7B6F7C89F7F2427501AC42 /* Persistence source in Tests */ = {isa = PBXBuildFile; fileRef = AB000016; };
+		E4EFB1B3D4BF3D018B3D9BAC /* Persistence source in Tests */ = {isa = PBXBuildFile; fileRef = 1A74E06E738CC184327BEC94; };
+		A2B1AA9082DA9321690DD246 /* Persistence source in Tests */ = {isa = PBXBuildFile; fileRef = AB000020; };
+		6ECB531206DA639C3FBADE0E /* Persistence source in Tests */ = {isa = PBXBuildFile; fileRef = AB000024; };
+		625925388A8F0C4AE6EBDB4F /* WorkoutStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4BBD347AD66F09E4EA25736; };
+		6E3E9DB13D5066D465C1BA04 /* OfficeWorkoutLogic in Test Frameworks */ = {isa = PBXBuildFile; productRef = AF600002 /* OfficeWorkoutLogic */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,6 +73,12 @@
 		AB100002 /* AppQuitActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppQuitActionTests.swift; sourceTree = "<group>"; };
 		AB200000 /* luma.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = luma.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB200001 /* OfficeWorkoutCoachTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OfficeWorkoutCoachTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A74E06E738CC184327BEC94 /* DataArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataArchive.swift; sourceTree = "<group>"; };
+		8E918FD1F11E3659A0130CF2 /* WorkoutCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCoordinator.swift; sourceTree = "<group>"; };
+		B07394AF139FFA4D8F2E03F0 /* TrainingPlanEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingPlanEditorView.swift; sourceTree = "<group>"; };
+		EC0C730942599E8FD5070004 /* WorkoutLaunchModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLaunchModifier.swift; sourceTree = "<group>"; };
+		1EC1052EEE8074125E5F5644 /* DataManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManagementView.swift; sourceTree = "<group>"; };
+		F4BBD347AD66F09E4EA25736 /* WorkoutStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStoreTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +94,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6E3E9DB13D5066D465C1BA04 /* OfficeWorkoutLogic in Test Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				AB100002 /* AppQuitActionTests.swift */,
+				F4BBD347AD66F09E4EA25736 /* WorkoutStoreTests.swift */,
 			);
 			path = OfficeWorkoutCoachTests;
 			sourceTree = "<group>";
@@ -123,6 +144,7 @@
 		AD000101 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				1A74E06E738CC184327BEC94 /* DataArchive.swift */,
 				AB000003 /* WorkoutSession.swift */,
 				AB000004 /* UserGoal.swift */,
 				AB000016 /* SetRecord.swift */,
@@ -133,6 +155,9 @@
 		AD000110 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				1EC1052EEE8074125E5F5644 /* DataManagementView.swift */,
+				EC0C730942599E8FD5070004 /* WorkoutLaunchModifier.swift */,
+				B07394AF139FFA4D8F2E03F0 /* TrainingPlanEditorView.swift */,
 				AB000010 /* MenuBarPopoverView.swift */,
 				AB000011 /* QuickLogView.swift */,
 				AB000012 /* SummaryView.swift */,
@@ -146,6 +171,7 @@
 		AD000120 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				8E918FD1F11E3659A0130CF2 /* WorkoutCoordinator.swift */,
 				AB100001 /* AppQuitAction.swift */,
 				AB000020 /* WorkoutRepository.swift */,
 				AB000023 /* NotificationManager.swift */,
@@ -221,6 +247,7 @@
 			);
 			name = OfficeWorkoutCoachTests;
 			packageProductDependencies = (
+				AF600002 /* OfficeWorkoutLogic */,
 			);
 			productName = OfficeWorkoutCoachTests;
 			productReference = AB200001 /* OfficeWorkoutCoachTests.xctest */;
@@ -282,6 +309,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA000001 /* OfficeWorkoutCoachApp.swift in Sources */,
+				5282988039A77FC4B0F93582 /* DataArchive.swift in Sources */,
+				1C229A4CD717E3013BA961FF /* WorkoutCoordinator.swift in Sources */,
+				69E722A3B370BDEBA672C996 /* TrainingPlanEditorView.swift in Sources */,
+				D8E346FAD976A7F1D647AA82 /* WorkoutLaunchModifier.swift in Sources */,
+				64867FA2050384EEE202BF37 /* DataManagementView.swift in Sources */,
 				AA000003 /* WorkoutSession.swift in Sources */,
 				AA000004 /* UserGoal.swift in Sources */,
 				AA000010 /* MenuBarPopoverView.swift in Sources */,
@@ -304,6 +336,13 @@
 			files = (
 				AA100003 /* AppQuitAction.swift in Sources */,
 				AA100002 /* AppQuitActionTests.swift in Sources */,
+				D14941E142D3E3F4DA5AFCF6 /* Persistence source in Tests */,
+				7F326A6546F3375BC2164BAD /* Persistence source in Tests */,
+				1A7B6F7C89F7F2427501AC42 /* Persistence source in Tests */,
+				E4EFB1B3D4BF3D018B3D9BAC /* Persistence source in Tests */,
+				A2B1AA9082DA9321690DD246 /* Persistence source in Tests */,
+				6ECB531206DA639C3FBADE0E /* Persistence source in Tests */,
+				625925388A8F0C4AE6EBDB4F /* WorkoutStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -28,7 +28,7 @@ final class UserGoal {
     init(
         id: UUID = UUID(),
         dailyStrengthTarget: Int = 1,
-        weeklyStrengthTarget: Int = 7,
+        weeklyStrengthTarget: Int = 3,
         dailyRecoveryTarget: Int = 2,
         weeklyRecoveryTarget: Int = 14,
         weeklyRunTarget: Int = 2,

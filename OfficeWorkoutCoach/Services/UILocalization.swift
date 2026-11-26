@@ -119,54 +119,12 @@ extension Exercise {
 }
 
 extension Recommendation {
-    /// Localized headline for the popover.
-    var localizedTitle: String {
-        switch action {
-        case .startStrength(let t):
-            let name = t.localizedName
-            return String(localized: "做 \(name),约 25 分钟")
-        case .logRun:   return String(localized: "rec.run.title",       defaultValue: "本周力量已达标,可以跑步")
-        case .recovery: return localized(key: titleKey, fallback: recoveryFallback)
-        case .minimal:  return String(localized: "rec.minimal.title",   defaultValue: "做 8 分钟最低版")
-        case .rest:     return localized(key: titleKey, fallback: "")
-        }
-    }
+    var localizedTitle: String { formatted(titleKey) }
+    var localizedReason: String { formatted(reasonKey) }
 
-    /// Localized subtitle.
-    var localizedReason: String {
-        switch action {
-        case .logRun:
-            let runShort = interpolations.first ?? "1"
-            return "本周力量已完成,跑步还差 \(runShort) 次。"
-        case .startStrength:
-            let strengthShort = interpolations.dropFirst().first ?? "0/3"
-            return "本周力量 \(strengthShort) 次,今天补上。"
-        case .minimal:
-            let days = interpolations.first ?? "2"
-            return "已经连续 \(days) 天没运动,先完成最低版,保持习惯。"
-        case .rest:
-            let days = interpolations.first ?? "6"
-            let format = NSLocalizedString(
-                "rec.rest.reason",
-                value: "已经连续训练 %1$@ 天,本周目标都达成了。恢复也是训练的一部分。",
-                comment: ""
-            )
-            return String(format: format, days)
-        default:
-            return localized(key: reasonKey, fallback: "")
-        }
-    }
-
-    private var recoveryFallback: String {
-        switch titleKey {
-        case "rec.back.title":     return String(localized: "rec.back.title",     defaultValue: "先做腰背恢复")
-        case "rec.afterRun.title": return String(localized: "rec.afterRun.title", defaultValue: "跑步后做腰背恢复")
-        case "rec.maintain.title": return String(localized: "rec.maintain.title", defaultValue: "今天做腰背恢复或休息")
-        default:                   return String(localized: "rec.back.title",     defaultValue: "先做腰背恢复")
-        }
-    }
-
-    private func localized(key: String, fallback: String) -> String {
-        NSLocalizedString(key, comment: "")
+    private func formatted(_ key: String) -> String {
+        let format = NSLocalizedString(key, comment: "")
+        guard !interpolations.isEmpty else { return format }
+        return String(format: format, arguments: interpolations.map { $0 as CVarArg })
     }
 }

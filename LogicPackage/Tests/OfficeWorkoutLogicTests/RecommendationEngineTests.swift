@@ -12,10 +12,10 @@ final class RecommendationEngineTests: XCTestCase {
     }()
     private let now = Date(timeIntervalSince1970: 1_700_000_000)
 
-    // Rule 1: back pain → recovery
-    func testBackPainTodayRecommendsRecovery() {
+    // Pain does not establish that a recovery exercise is appropriate.
+    func testBackPainTodayRecommendsPause() {
         let stats = baseStats(recentBackPain: true, hasActivityToday: false)
-        XCTAssertEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .recovery)
+        XCTAssertEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .rest)
     }
 
     // Rule 2: ran today → recovery
@@ -24,11 +24,10 @@ final class RecommendationEngineTests: XCTestCase {
         XCTAssertEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .recovery)
     }
 
-    // Rule 3: today's strength met → run or recovery
-    func testStrengthMetTodayRunShortSuggestsRun() {
-        // dailyStrengthTarget default = 1; today's strength = 1 → met → run short → run
+    // Reaching a strength target does not automatically stack another workout.
+    func testStrengthMetTodayDoesNotStackRunToMeetWeeklyTarget() {
         let stats = baseStats(runCount: 0, strengthCountToday: 1, hasActivityToday: false)
-        XCTAssertEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .logRun)
+        XCTAssertEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .recovery)
     }
     func testStrengthMetTodayRunMetSuggestsRecovery() {
         let stats = baseStats(runCount: 2, strengthCountToday: 1, hasActivityToday: false)
@@ -37,11 +36,11 @@ final class RecommendationEngineTests: XCTestCase {
 
     // Rule 4: A/B alternation (today's strength NOT met yet → strength)
     func testLastWasA_RecommendsB() {
-        let stats = baseStats(strengthCountToday: 0, lastStrengthType: .strengthA, daysSinceLastStrength: 1, hasActivityToday: false)
+        let stats = baseStats(strengthCountToday: 0, lastStrengthType: .strengthA, daysSinceLastStrength: 2, hasActivityToday: false)
         XCTAssertEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .startStrength(.strengthB))
     }
     func testLastWasB_RecommendsA() {
-        let stats = baseStats(strengthCountToday: 0, lastStrengthType: .strengthB, daysSinceLastStrength: 1, hasActivityToday: false)
+        let stats = baseStats(strengthCountToday: 0, lastStrengthType: .strengthB, daysSinceLastStrength: 2, hasActivityToday: false)
         XCTAssertEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .startStrength(.strengthA))
     }
     func testNoPriorStrength_RecommendsA() {
@@ -62,7 +61,7 @@ final class RecommendationEngineTests: XCTestCase {
     // Priority interactions
     func testBackPainBeatsAlternation() {
         let stats = baseStats(strengthCountToday: 0, lastStrengthType: .strengthA, daysSinceLastStrength: 1, consecutiveInactiveDays: 0, recentBackPain: true, hasActivityToday: false)
-        XCTAssertEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .recovery)
+        XCTAssertEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .rest)
     }
     func testRanTodayBeatsAlternationEvenIfStrengthShort() {
         let stats = baseStats(strengthCountToday: 0, hasActivityToday: true, hasRunToday: true)
@@ -108,25 +107,25 @@ final class RecommendationEngineTests: XCTestCase {
         XCTAssertEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .rest)
     }
 
-    /// 连续练很多天但周目标还差得远 → 不能因为"连续天数"就让人停。
-    func testSixActiveDaysButGoalsShort_KeepsTraining() {
+    /// A missed goal does not override the configured break after repeated days.
+    func testConsecutiveDayBreakAppliesEvenWhenGoalsAreShort() {
         let stats = baseStats(
             strengthCount: 2, runCount: 0, recoveryCount: 0,
             strengthCountToday: 1,
             consecutiveActiveDays: 9
         )
         let action = engine.recommend(stats: stats, goal: goal, now: now).action
-        XCTAssertNotEqual(action, .rest)
+        XCTAssertEqual(action, .rest)
     }
 
-    /// 没到阈值时不应触发休息。
-    func testFiveActiveDays_NoRest() {
+    /// Meeting all goals also permits rest without reaching the streak limit.
+    func testAllTargetsMetAllowsRestBeforeStreakLimit() {
         let stats = baseStats(
             strengthCount: 7, runCount: 2, recoveryCount: 14,
             strengthCountToday: 1,
             consecutiveActiveDays: 5
         )
-        XCTAssertNotEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .rest)
+        XCTAssertEqual(engine.recommend(stats: stats, goal: goal, now: now).action, .rest)
     }
 
     // MARK: - 中断后重新起步

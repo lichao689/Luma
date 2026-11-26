@@ -1,7 +1,7 @@
 import Foundation
 
 /// What the app suggests the user do right now.
-public struct Recommendation: Equatable {
+public struct Recommendation: Equatable, Sendable {
     public enum Action: Equatable, Sendable {
         case startStrength(WorkoutType)
         case logRun
@@ -26,76 +26,130 @@ public struct Recommendation: Equatable {
     }
 }
 
-/// A pure, injectable decision function. No I/O, no SwiftData — takes the
-/// stats snapshot + goal and returns a recommendation.
-///
-/// Rules are evaluated **in priority order**; the first match wins. The tests
-/// pin each rule explicitly.
-public struct RecommendationEngine {
-    /// 连续训练多少天后建议休息(且本周目标已达成时)。
-    public static let restAfterConsecutiveDays = 6
-    /// 距上次力量训练超过这么多天,视为中断,从力量 A 重新开始而不是继续交替。
-    public static let restartAfterIdleDays = 7
+/// Transparent product defaults, not an individualized physiological model.
+/// The duration × reported-effort value is only a scheduling signal and has no
+/// clinical units. Callers may inject a different policy without changing data.
+public struct RecommendationPolicy: Equatable, Sendable {
+    public var strengthRecoveryHours: Double
+    public var sameMuscleRecoveryHours: Double
+    public var runRecoveryHours: Double
+    public var hardSessionRecoveryHours: Double
+    public var maximumConsecutiveActiveDays: Int
+    public var loadThreshold24Hours: Double
 
-    public init() {}
+    public init(strengthRecoveryHours: Double = 48, sameMuscleRecoveryHours: Double = 36,
+                runRecoveryHours: Double = 24, hardSessionRecoveryHours: Double = 24,
+                maximumConsecutiveActiveDays: Int = 6, loadThreshold24Hours: Double = 240) {
+        self.strengthRecoveryHours = strengthRecoveryHours
+        self.sameMuscleRecoveryHours = sameMuscleRecoveryHours
+        self.runRecoveryHours = runRecoveryHours
+        self.hardSessionRecoveryHours = hardSessionRecoveryHours
+        self.maximumConsecutiveActiveDays = maximumConsecutiveActiveDays
+        self.loadThreshold24Hours = loadThreshold24Hours
+    }
+
+    public static let `default` = RecommendationPolicy()
+}
+
+/// A pure, injectable scheduling policy. Discomfort and intentional rest take
+/// precedence over targets. Partial work still affects recovery; it does not
+/// silently become a completed goal. Daily targets apply on training days.
+public struct RecommendationEngine {
+    public static let restAfterConsecutiveDays = 6
+    public static let restartAfterIdleDays = 7
+    public let policy: RecommendationPolicy
+
+    public init(policy: RecommendationPolicy = .default) { self.policy = policy }
 
     public func recommend(stats: WorkoutStats, goal: UserGoalValues, now: Date = .now) -> Recommendation {
-        // 1. Recent back pain and not yet recovered today → recovery.
-        if stats.recentBackPain && !stats.hasActivityToday {
-            return Recommendation(action: .recovery, titleKey: "rec.back.title", reasonKey: "rec.back.reason")
+        // A "recovery" label is not evidence an exercise is appropriate for pain.
+        if stats.recentBackPain {
+            return Recommendation(action: .rest, titleKey: "rec.pause.title", reasonKey: "rec.pause.pain")
         }
-
-        // 2. Already ran today → recovery (no leg-loading strength).
-        if stats.hasRunToday {
-            return Recommendation(action: .recovery, titleKey: "rec.afterRun.title", reasonKey: "rec.afterRun.reason")
+        if stats.hasIntentionalRestToday {
+            return Recommendation(action: .rest, titleKey: "rec.rest.title", reasonKey: "rec.rest.planned")
         }
-
-        // 3. 过度训练保护:连续训练多天且本周目标已达成 → 休息。
-        //    恢复本身是训练的一部分,没有这条规则系统永远不会让人停。
-        if stats.consecutiveActiveDays >= Self.restAfterConsecutiveDays, weeklyGoalsMet(stats: stats, goal: goal) {
+        if stats.consecutiveActiveDays >= max(1, policy.maximumConsecutiveActiveDays) {
             return Recommendation(
-                action: .rest,
-                titleKey: "rec.rest.title",
-                reasonKey: "rec.rest.reason",
-                interpolations: ["\(stats.consecutiveActiveDays)"]
+                action: .rest, titleKey: "rec.rest.title", reasonKey: "rec.rest.reason",
+                interpolations: [String(stats.consecutiveActiveDays)]
             )
         }
 
-        // 4. Today's strength already met → run / recovery.
-        if stats.strengthCountToday >= goal.dailyStrengthTarget {
-            if stats.runCount < goal.weeklyRunTarget {
-                let runShort = goal.weeklyRunTarget - stats.runCount
-                return Recommendation(
-                    action: .logRun,
-                    titleKey: "rec.run.title",
-                    reasonKey: "rec.run.reason",
-                    interpolations: ["\(runShort)"]
-                )
+        let recent = stats.recentActivities.filter { $0.date <= now }
+        if recent.contains(where: {
+            $0.bodyFeeling?.lowercased() == "fatigue"
+                && now.timeIntervalSince($0.date) < max(0, policy.hardSessionRecoveryHours) * 3600
+        }) {
+            return Recommendation(action: .rest, titleKey: "rec.rest.title", reasonKey: "rec.rest.fatigue")
+        }
+        if recent.contains(where: { session in
+            session.type.isActivity && (4...5).contains(session.intensity)
+                && now.timeIntervalSince(session.date) < max(0, policy.hardSessionRecoveryHours) * 3600
+        }) {
+            return Recommendation(action: .rest, titleKey: "rec.rest.title", reasonKey: "rec.rest.highEffort")
+        }
+        let load = recent.filter { $0.type.isActivity && now.timeIntervalSince($0.date) < 24 * 3600 }
+            .reduce(0.0) { total, session in
+                guard (1...5).contains(session.intensity) else { return total }
+                return total + Double(max(0, min(1440, session.durationMinutes))) * Double(session.intensity)
             }
-            return Recommendation(action: .recovery, titleKey: "rec.maintain.title", reasonKey: "rec.maintain.reason")
+        if load >= max(1, policy.loadThreshold24Hours) {
+            return Recommendation(action: .rest, titleKey: "rec.rest.title", reasonKey: "rec.rest.recentLoad")
+        }
+        if recent.contains(where: {
+            $0.bodyFeeling?.lowercased() == "legsore"
+                && now.timeIntervalSince($0.date) < max(0, policy.sameMuscleRecoveryHours) * 3600
+        }) {
+            return recoveryOrRest(stats: stats, goal: goal, reason: "rec.recovery.soreness")
+        }
+        if stats.hasRunToday || recent.contains(where: {
+            $0.type == .run && now.timeIntervalSince($0.date) < max(0, policy.runRecoveryHours) * 3600
+        }) {
+            return recoveryOrRest(stats: stats, goal: goal, reason: "rec.afterRun.reason", title: "rec.afterRun.title")
         }
 
-        // 5. Two+ days fully inactive → lower the bar to the 8-minute minimum.
-        if stats.consecutiveInactiveDays >= 2 && !stats.hasActivityToday {
-            return Recommendation(
-                action: .minimal,
-                titleKey: "rec.minimal.title",
-                reasonKey: "rec.minimal.reason",
-                interpolations: ["\(stats.consecutiveInactiveDays)"]
-            )
+        let strengthHours = stats.lastStrengthAt.map { max(0, now.timeIntervalSince($0) / 3600) }
+            ?? stats.daysSinceLastStrength.map { Double(max(0, $0)) * 24 }
+        if let strengthHours, strengthHours < max(0, policy.strengthRecoveryHours) {
+            return recoveryOrRest(stats: stats, goal: goal, reason: "rec.recovery.spacing")
         }
 
-        // 6. Need strength today → A/B alternation, unless the gap is long
-        //    enough that restarting from A is the safer ramp.
         let plan = nextPlan(stats: stats)
+        let nextMuscles = Set(ExerciseLibrary.exercises(for: plan).flatMap(\.targets))
+        let repeatedMuscles = recent.contains { session in
+            guard session.type == .minimal || session.type.countsAsStrength,
+                  now.timeIntervalSince(session.date) < max(0, policy.sameMuscleRecoveryHours) * 3600 else { return false }
+            let exercises: [Exercise]
+            if !session.exerciseIDs.isEmpty {
+                exercises = session.exerciseIDs.compactMap(ExerciseLibrary.exercise(id:))
+            } else {
+                exercises = session.type == .minimal ? PrescriptionLibrary.minimalExercises : ExerciseLibrary.exercises(for: session.type)
+            }
+            return !nextMuscles.isDisjoint(with: exercises.flatMap(\.targets))
+        }
+        if repeatedMuscles {
+            return recoveryOrRest(stats: stats, goal: goal, reason: "rec.recovery.muscles")
+        }
 
-        let strengthShort = "\(stats.strengthCountToday)/\(goal.dailyStrengthTarget)"
-        let planKey = plan == .strengthA ? "A" : "B"
+        if goal.dailyStrengthTarget <= 0 || goal.weeklyStrengthTarget <= 0
+            || stats.strengthCount >= goal.weeklyStrengthTarget {
+            if !stats.hasActivityToday && stats.runCount < goal.weeklyRunTarget {
+                return Recommendation(action: .logRun, titleKey: "rec.run.title", reasonKey: "rec.run.reason",
+                                      interpolations: [String(goal.weeklyRunTarget - stats.runCount)])
+            }
+            return recoveryOrRest(stats: stats, goal: goal, reason: "rec.recovery.weeklyMet")
+        }
+        if stats.strengthCountToday >= goal.dailyStrengthTarget {
+            return recoveryOrRest(stats: stats, goal: goal, reason: "rec.recovery.dailyMet")
+        }
+        if stats.consecutiveInactiveDays >= 2 && !stats.hasActivityToday {
+            return Recommendation(action: .minimal, titleKey: "rec.minimal.title", reasonKey: "rec.minimal.reason",
+                                  interpolations: [String(stats.consecutiveInactiveDays)])
+        }
         return Recommendation(
-            action: .startStrength(plan),
-            titleKey: "rec.strength.title",
-            reasonKey: "rec.strength.reason",
-            interpolations: [planKey, strengthShort]
+            action: .startStrength(plan), titleKey: "rec.strength.title", reasonKey: "rec.strength.weeklyReason",
+            interpolations: [plan == .strengthA ? "A" : "B", "\(stats.strengthCount)/\(goal.weeklyStrengthTarget)"]
         )
     }
 
@@ -111,10 +165,12 @@ public struct RecommendationEngine {
         }
     }
 
-    private func weeklyGoalsMet(stats: WorkoutStats, goal: UserGoalValues) -> Bool {
-        stats.strengthCount >= goal.weeklyStrengthTarget
-            && stats.runCount >= goal.weeklyRunTarget
-            && stats.recoveryCount >= goal.weeklyRecoveryTarget
+    private func recoveryOrRest(stats: WorkoutStats, goal: UserGoalValues, reason: String,
+                                title: String = "rec.maintain.title") -> Recommendation {
+        if stats.recoveryCountToday < goal.dailyRecoveryTarget && stats.recoveryCount < goal.weeklyRecoveryTarget {
+            return Recommendation(action: .recovery, titleKey: title, reasonKey: reason)
+        }
+        return Recommendation(action: .rest, titleKey: "rec.rest.title", reasonKey: "rec.rest.targetsMet")
     }
 }
 

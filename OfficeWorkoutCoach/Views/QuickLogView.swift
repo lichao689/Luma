@@ -19,6 +19,9 @@ struct QuickLogView: View {
     @State private var intensity: Int = 3
     @State private var bodyFeeling: BodyFeeling = .normal
     @State private var notes: String = ""
+    @State private var errorMessage: String?
+    @State private var sessionID = UUID()
+    @State private var sessionDate = Date()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -35,6 +38,9 @@ struct QuickLogView: View {
         .padding(12)
         .controlSize(.small)
         .onAppear { configureDefaults() }
+        .alert(String(localized: "common.error", defaultValue: "未能保存"), isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+            Button(String(localized: "common.ok", defaultValue: "好")) { errorMessage = nil }
+        } message: { Text(errorMessage ?? "") }
     }
 
     /// Single compact title bar: back chevron + icon + type name.
@@ -99,8 +105,8 @@ struct QuickLogView: View {
 
     private var needsDetails: Bool {
         switch type {
-        case .strengthA, .strengthB, .run, .recovery: return true
-        case .minimal, .rest: return false
+        case .strengthA, .strengthB, .run, .recovery, .minimal: return true
+        case .rest: return false
         }
     }
 
@@ -115,22 +121,24 @@ struct QuickLogView: View {
     }
 
     private func save() {
-        store.log(
-            type: type,
-            durationMinutes: needsDetails ? durationMinutes : (type == .minimal ? 8 : 0),
-            completion: needsDetails ? completion : (type == .minimal ? .minimal : .full),
-            intensity: needsDetails ? intensity : 2,
-            bodyFeeling: needsDetails ? bodyFeeling.rawValue : nil,
-            notes: notes.isEmpty ? nil : notes
-        )
-        onDone(true)
+        do {
+            _ = try store.saveWorkout(
+                id: sessionID, type: type,
+                durationMinutes: needsDetails ? durationMinutes : 0,
+                completion: needsDetails ? completion : .full,
+                intensity: needsDetails ? intensity : 1,
+                bodyFeeling: needsDetails ? bodyFeeling.rawValue : nil,
+                notes: notes.isEmpty ? nil : notes, date: sessionDate, sets: []
+            )
+            onDone(true)
+        } catch { errorMessage = error.localizedDescription }
     }
 }
 
 /// Body-feeling picker values. The raw values are written into
 /// `WorkoutSession.bodyFeeling` and scanned by `BackPainMarkers`.
 enum BodyFeeling: String, CaseIterable, Identifiable {
-    case normal, backTight, legSore, fatigue
+    case normal, backTight, legSore, fatigue, pain
     var id: String { rawValue }
     var localizedName: String {
         switch self {
@@ -138,6 +146,7 @@ enum BodyFeeling: String, CaseIterable, Identifiable {
         case .backTight: return String(localized: "feeling.backTight", defaultValue: "腰紧")
         case .legSore:   return String(localized: "feeling.legSore",   defaultValue: "腿酸")
         case .fatigue:   return String(localized: "feeling.fatigue",   defaultValue: "疲劳")
+        case .pain:      return String(localized: "feeling.pain",      defaultValue: "疼痛或不适")
         }
     }
 }

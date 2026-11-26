@@ -12,10 +12,10 @@ public enum ReminderMode: String, Codable, CaseIterable, Identifiable, Sendable 
 /// Value-type snapshot of the user's goals + reminder prefs. Decoupled from
 /// SwiftData so the engine and stats stay pure-Swift testable.
 ///
-/// Strength & recovery have BOTH a daily and a weekly target (daily drives the
-/// recommendation engine + today's badge; weekly drives the summary rollup).
-/// Run only has a weekly target.
-public struct UserGoalValues: Equatable, Sendable {
+/// Daily targets are limits on a training day, not a requirement to train every
+/// day. Weekly targets and recovery rules jointly decide whether to suggest more.
+/// Run only has a weekly target. Existing saved goals are kept by the app.
+public struct UserGoalValues: Equatable, Codable, Sendable {
     public var dailyStrengthTarget: Int
     public var weeklyStrengthTarget: Int
     public var dailyRecoveryTarget: Int
@@ -32,7 +32,7 @@ public struct UserGoalValues: Equatable, Sendable {
 
     public init(
         dailyStrengthTarget: Int = 1,
-        weeklyStrengthTarget: Int = 7,
+        weeklyStrengthTarget: Int = 3,
         dailyRecoveryTarget: Int = 2,
         weeklyRecoveryTarget: Int = 14,
         weeklyRunTarget: Int = 2,

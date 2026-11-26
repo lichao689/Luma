@@ -129,6 +129,7 @@ private struct ExerciseDetail: View {
     let item: ExerciseGuideItem
 
     @Environment(\.openWindow) private var openWindow
+    @EnvironmentObject private var workout: WorkoutCoordinator
 
     private var exercise: Exercise { item.exercise }
     private var prescription: PrescriptionText { PrescriptionText.make(for: item) }
@@ -185,7 +186,8 @@ private struct ExerciseDetail: View {
     private var startButton: some View {
         Button {
             NSApplication.shared.activate(ignoringOtherApps: true)
-            openWindow(id: "workout", value: item.plan.rawValue)
+            workout.prepare(item.plan)
+            openWindow(id: "workout")
         } label: {
             Label(startTitle, systemImage: "play.fill")
                 .frame(maxWidth: .infinity)
